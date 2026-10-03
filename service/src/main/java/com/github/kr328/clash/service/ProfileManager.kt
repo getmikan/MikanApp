@@ -1429,7 +1429,7 @@ class ProfileManager(private val context: Context) : IProfileManager,
                 store.geoDataCustomGeoIp, store.geoDataCustomGeoSite, store.geoDataCustomMmdb, store.geoDataCustomAsn)
             com.github.kr328.clash.service.util.ConfigComposer.compose(base, layer.copy(subscriptionChain = null), urls,
                 store.proxyHardeningMode, scriptRunner = ConfigScriptPolicy.runnerFor(context, uuid, profileName),
-                realityCompat = store.realityMlkemCompat).also { require(Clash.validateProfileBytes(it) == null) }
+                realityCompat = store.realityComposeRewrite).also { require(Clash.validateProfileBytes(it) == null) }
         }
     }
 

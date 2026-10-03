@@ -349,7 +349,7 @@ object ProfileProcessor {
                     val composed = try {
                         ConfigComposer.compose(
                             fetchedText, refreshedLayer, geoUrls, serviceStore.proxyHardeningMode,
-                            realityCompat = serviceStore.realityMlkemCompat,
+                            realityCompat = serviceStore.realityComposeRewrite,
                             scriptRunner = ConfigScriptPolicy.runnerFor(context, snapshot.uuid, snapshot.name),
                         )
                     } catch (e: ConfigScriptException) {
@@ -358,7 +358,7 @@ object ProfileProcessor {
                         ConfigComposer.compose(
                             fetchedText, refreshedLayer.copy(script = null), geoUrls,
                             serviceStore.proxyHardeningMode,
-                            realityCompat = serviceStore.realityMlkemCompat,
+                            realityCompat = serviceStore.realityComposeRewrite,
                         )
                     }
                     // Runtime engine gate (§config-engine-gate): NEVER apply a config the engine
