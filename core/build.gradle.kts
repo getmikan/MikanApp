@@ -92,6 +92,10 @@ golang {
             tags.set(listOf("foss","with_gvisor","cmfa"))
             srcDir.set(file("src/foss/golang"))
         }
+        create("play") {
+            tags.set(listOf("foss","with_gvisor","cmfa"))
+            srcDir.set(file("src/foss/golang"))
+        }
         all {
             fileName.set("libclash.so")
             packageName.set("cfa/native")
