@@ -147,6 +147,8 @@ subprojects {
                 // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
                 minSdk = 24
                 targetSdk = 36
+                // Play keeps every uploaded version code, even of a bundle it refused.
+                versionCode = 10201014
                 if (isApp) {
                     applicationId = "io.github.miroshka000.mikan"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
