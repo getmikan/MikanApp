@@ -142,6 +142,8 @@ subprojects {
             // updating itself; src/play/AndroidManifest.xml drops the install permission).
             create("play") {
                 dimension = flavorDimensionList[0]
+                // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
+                minSdk = 24
                 if (isApp) {
                     applicationId = "com.getmikan.android"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
