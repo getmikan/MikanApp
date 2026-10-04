@@ -94,7 +94,9 @@ subprojects {
 
         ndkVersion = "29.0.14206865"
 
-        compileSdkVersion(defaultConfig.targetSdk!!)
+        // 36 for the Play flavor's targetSdk (Google Play requires it); the GitHub builds
+        // still target 35.
+        compileSdkVersion(36)
 
         if (isApp) {
             packagingOptions {
@@ -144,6 +146,7 @@ subprojects {
                 dimension = flavorDimensionList[0]
                 // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
                 minSdk = 24
+                targetSdk = 36
                 if (isApp) {
                     applicationId = "io.github.miroshka000.mikan"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
