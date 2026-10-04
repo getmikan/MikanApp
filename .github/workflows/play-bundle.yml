@@ -1,7 +1,7 @@
 name: Play bundle
 
 # A signed Android App Bundle of the "play" flavor for Google Play (package
-# com.getmikan.android, no self-update). Run by hand; the .aab is an artifact.
+# io.github.miroshka000.mikan, no self-update). Run by hand; the .aab is an artifact.
 on:
   workflow_dispatch:
   push:

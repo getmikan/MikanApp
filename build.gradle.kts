@@ -138,14 +138,14 @@ subprojects {
                 buildConfigField("boolean", "SELF_UPDATE", "true")
             }
 
-            // Google Play: its own package, and no updates from GitHub (Play forbids an app
+            // Google Play: its own package (fixed by the Play Console listing), and no updates from GitHub (Play forbids an app
             // updating itself; src/play/AndroidManifest.xml drops the install permission).
             create("play") {
                 dimension = flavorDimensionList[0]
                 // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
                 minSdk = 24
                 if (isApp) {
-                    applicationId = "com.getmikan.android"
+                    applicationId = "io.github.miroshka000.mikan"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
                     resValue("string", "application_name", "@string/application_name_alpha")
                 }
