@@ -28,6 +28,8 @@ object GitHubReleaseUpdate {
     )
 
     suspend fun fetchLatest(): Info? = withContext(Dispatchers.IO) {
+        // The Google Play build is updated by Play only.
+        if (!BuildConfig.SELF_UPDATE) return@withContext null
         runCatching {
             val endpoint = "https://api.github.com/repos/getmikan/MikanApp/releases/latest"
             val text = HttpTextFetcher.fetchUtf8(
@@ -97,6 +99,7 @@ object GitHubReleaseUpdate {
         apkUrl: String,
         apkName: String?,
     ): Long {
+        if (!BuildConfig.SELF_UPDATE) return -1L
         if (!UpdateApkVerifier.isTrustedDownloadUrl(apkUrl)) return -1L
         val dm = context.getSystemService(DownloadManager::class.java) ?: return -1L
         val fileName = (apkName ?: "mikan-$tagName.apk")

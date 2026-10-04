@@ -121,6 +121,7 @@ subprojects {
                 if (isApp && !removeSuffix) {
                     applicationIdSuffix = ".alpha"
                 }
+                buildConfigField("boolean", "SELF_UPDATE", "true")
             }
 
             create("meta") {
@@ -134,6 +135,19 @@ subprojects {
                 if (isApp && !removeSuffix) {
                     applicationIdSuffix = ".meta"
                 }
+                buildConfigField("boolean", "SELF_UPDATE", "true")
+            }
+
+            // Google Play: its own package, and no updates from GitHub (Play forbids an app
+            // updating itself; src/play/AndroidManifest.xml drops the install permission).
+            create("play") {
+                dimension = flavorDimensionList[0]
+                if (isApp) {
+                    applicationId = "com.getmikan.android"
+                    resValue("string", "launch_name", "@string/launch_name_alpha")
+                    resValue("string", "application_name", "@string/application_name_alpha")
+                }
+                buildConfigField("boolean", "SELF_UPDATE", "false")
             }
         }
 
@@ -142,6 +156,9 @@ subprojects {
                 java.srcDirs("src/foss/java")
             }
             getByName("alpha") {
+                java.srcDirs("src/foss/java")
+            }
+            getByName("play") {
                 java.srcDirs("src/foss/java")
             }
         }
