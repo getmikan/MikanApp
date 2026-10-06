@@ -1345,6 +1345,7 @@
     <string name="brand_dev_hide_global">Скрыть глобальный режим (действует и без брендинга)</string>
     <string name="brand_dev_user_name">Отображаемое имя пользователя</string>
     <string name="brand_dev_greeting">Приветствие</string>
+    <string name="brand_dev_primary_group">Основная группа прокси (политика)</string>
     <string name="brand_dev_url_format">%1$s (URL)</string>
     <string name="brand_dev_sample_name">Оператор %1$d</string>
     <string name="brand_dev_sample_tagline">Быстрое и безопасное подключение</string>

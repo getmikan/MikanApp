@@ -1274,6 +1274,7 @@
     <string name="brand_dev_hide_global">隐藏全局模式（品牌关闭时也生效）</string>
     <string name="brand_dev_user_name">用户显示名称</string>
     <string name="brand_dev_greeting">问候语</string>
+    <string name="brand_dev_primary_group">主代理组（策略）</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">运营商 %1$d</string>
     <string name="brand_dev_sample_tagline">快速安全</string>

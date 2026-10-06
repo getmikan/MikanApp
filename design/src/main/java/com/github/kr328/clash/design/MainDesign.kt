@@ -536,6 +536,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
             profileAdapter.setBrandManifest(holder.manifest) { url ->
                 onOpenBrandUrl?.invoke(url)
             }
+            profileAdapter.setPrimaryProxyGroup(holder.manifest.primaryProxyGroup)
+            tabProfileAdapter.setPrimaryProxyGroup(holder.manifest.primaryProxyGroup)
         }
     }
 
@@ -1564,6 +1566,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         val fHelp = field(cur.helpUrl); val fStatus = field(cur.statusUrl)
         val fRenew = field(cur.renewUrl); val fCabinet = field(cur.cabinetUrl)
         val fUser = field(cur.userDisplayName); val fGreeting = field(cur.greeting)
+        val fPrimaryGroup = field(cur.primaryProxyGroup)
         val sEnabled = boolSpinner(cur.enabled ?: true)      // default Yes so Apply themes immediately
         val sHideRouting = boolSpinner(cur.hideRouting)
         val sHideGlobal = boolSpinner(cur.hideGlobalMode)
@@ -1595,6 +1598,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         row(R.string.brand_dev_hide_routing, sHideRouting); row(R.string.brand_dev_show_operator, sOperatorTab)
         row(R.string.brand_dev_hide_global, sHideGlobal)
         row(R.string.brand_dev_user_name, fUser); row(R.string.brand_dev_greeting, fGreeting)
+        row(R.string.brand_dev_primary_group, fPrimaryGroup)
         urlRow(R.string.about_brand_website, fWebsite); urlRow(R.string.about_brand_support, fSupport); urlRow(R.string.about_brand_telegram, fTelegram)
         urlRow(R.string.about_brand_bot, fBot); urlRow(R.string.about_brand_privacy, fPrivacy); urlRow(R.string.about_brand_terms, fTerms)
         urlRow(R.string.about_brand_help, fHelp); urlRow(R.string.about_brand_status, fStatus); urlRow(R.string.about_brand_renew, fRenew); urlRow(R.string.about_brand_cabinet, fCabinet)
@@ -1638,6 +1642,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
                         cabinetUrl = s(fCabinet), userDisplayName = s(fUser), greeting = s(fGreeting),
                         hideRouting = sHideRouting.boolValue(), showOperatorTab = sOperatorTab.boolValue(),
                         hideGlobalMode = sHideGlobal.boolValue(),
+                        lockConfigScript = cur.lockConfigScript,
+                        primaryProxyGroup = s(fPrimaryGroup),
                         enabled = sEnabled.boolValue(),
                     ),
                 )

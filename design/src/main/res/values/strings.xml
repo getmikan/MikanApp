@@ -1361,6 +1361,7 @@ Password: %4$s</string>
     <string name="brand_dev_hide_global">Hide Global mode (also applies when branding is off)</string>
     <string name="brand_dev_user_name">User display name</string>
     <string name="brand_dev_greeting">Greeting</string>
+    <string name="brand_dev_primary_group">Primary proxy group (policy)</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">Operator %1$d</string>
     <string name="brand_dev_sample_tagline">Fast and secure</string>
