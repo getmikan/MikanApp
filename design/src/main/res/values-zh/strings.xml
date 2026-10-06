@@ -1277,6 +1277,7 @@
     <string name="brand_dev_user_name">用户显示名称</string>
     <string name="brand_dev_greeting">问候语</string>
     <string name="brand_dev_primary_group">主代理组（策略）</string>
+    <string name="brand_dev_group_layout">代理组布局：tabs / dropdown（策略）</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">运营商 %1$d</string>
     <string name="brand_dev_sample_tagline">快速安全</string>
@@ -1336,4 +1337,6 @@
     <string name="chain_saved_offline">代理链已保存。VPN 未启动；下次连接将使用出口订阅和此代理链。</string>
     <string name="chain_connected">已选择代理链。流量通过入口并从第二个服务器出口。</string>
     <string name="chain_removed">代理链已删除。订阅恢复普通路由。</string>
+    <string name="proxy_layout_show_dropdown">以下拉列表显示分组</string>
+    <string name="proxy_layout_show_tabs">以标签页显示分组</string>
 </resources>

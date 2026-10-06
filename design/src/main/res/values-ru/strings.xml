@@ -1348,6 +1348,7 @@
     <string name="brand_dev_user_name">Отображаемое имя пользователя</string>
     <string name="brand_dev_greeting">Приветствие</string>
     <string name="brand_dev_primary_group">Основная группа прокси (политика)</string>
+    <string name="brand_dev_group_layout">Раскладка групп прокси: tabs / dropdown (политика)</string>
     <string name="brand_dev_url_format">%1$s (URL)</string>
     <string name="brand_dev_sample_name">Оператор %1$d</string>
     <string name="brand_dev_sample_tagline">Быстрое и безопасное подключение</string>
@@ -1407,4 +1408,6 @@
     <string name="chain_saved_offline">Цепочка сохранена. VPN не запускался; следующее подключение использует выбранную выходную подписку и эту цепочку.</string>
     <string name="chain_connected">Цепочка выбрана. Трафик проходит через вход и выходит через второй сервер.</string>
     <string name="chain_removed">Цепочка удалена. Подписка снова использует обычную маршрутизацию.</string>
+    <string name="proxy_layout_show_dropdown">Группы выпадающими списками</string>
+    <string name="proxy_layout_show_tabs">Группы вкладками</string>
 </resources>

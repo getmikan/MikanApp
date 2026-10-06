@@ -1364,6 +1364,7 @@ Password: %4$s</string>
     <string name="brand_dev_user_name">User display name</string>
     <string name="brand_dev_greeting">Greeting</string>
     <string name="brand_dev_primary_group">Primary proxy group (policy)</string>
+    <string name="brand_dev_group_layout">Proxy group layout: tabs / dropdown (policy)</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">Operator %1$d</string>
     <string name="brand_dev_sample_tagline">Fast and secure</string>
@@ -1416,4 +1417,6 @@ Password: %4$s</string>
     <string name="chain_saved_offline">Chain saved. VPN has not been started; your next connection will use the selected exit subscription and this chain.</string>
     <string name="chain_connected">Chain selected. Traffic passes through the entry and exits through the second server.</string>
     <string name="chain_removed">Chain removed. The subscription uses its normal routing again.</string>
+    <string name="proxy_layout_show_dropdown">Show groups as dropdown lists</string>
+    <string name="proxy_layout_show_tabs">Show groups as tabs</string>
 </resources>
