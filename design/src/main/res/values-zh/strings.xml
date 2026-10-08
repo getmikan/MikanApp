@@ -906,8 +906,12 @@
     <string name="keep_connections_on_old_proxy">切换后保留旧代理上的连接</string>
     <string name="keep_connections_on_old_proxy_summary">默认情况下,手动切换代理后 Mikan 会关闭活动连接,使新流量立即走所选代理。开启此项可让正在进行的连接保留在旧代理上——适合不想中断的大文件下载、视频流或游戏会话。</string>
     <string name="network_switch_reaction">响应网络切换</string>
-    <string name="reality_mlkem_compat">REALITY：启用 ML-KEM（Xray 26.9+）</string>
-    <string name="reality_mlkem_compat_summary">为所有 REALITY 节点添加 X25519MLKEM768 密钥共享和 chrome 指纹。Xray-core 26.9.8+ 服务器需要它，但旧服务器会静默丢弃此类握手，导致节点无法连接。除非运营商要求，否则请保持关闭。</string>
+    <string name="reality_mlkem_policy">REALITY：ML-KEM 密钥共享</string>
+    <string name="reality_mlkem_auto">自动：按服务器学习（推荐）</string>
+    <string name="reality_mlkem_on">始终提供（仅 Xray 26.9+）</string>
+    <string name="reality_mlkem_off">从不提供（仅旧版 Xray）</string>
+    <string name="reality_client_version">REALITY：客户端版本</string>
+    <string name="reality_client_version_placeholder">内核默认（Xray 格式 x.y.z）</string>
     <string name="network_switch_reaction_summary">当设备切换网络(Wi-Fi ↔ 移动数据)时,立即关闭失效连接并重新测试代理组,使自动组马上选择可用服务器,而不必等待下一次计划的健康检查。</string>
     <string name="launch_name_alpha">Mikan</string>
     <string name="main_activity_summary">实时连接与诊断</string>
@@ -1205,6 +1209,8 @@
     <string name="subscription_auto_update_off">自动更新已关闭</string>
     <string name="subscription_updating">正在更新订阅…</string>
     <string name="subscription_update_error">更新失败。已保存的订阅仍可使用。</string>
+    <string name="profile_updated_fmt">%s更新</string>
+    <string name="profile_updated_just_now">刚刚更新</string>
     <string name="subscription_retry">重试</string>
     <string name="subscription_activating">正在选择订阅…</string>
     <string name="subscription_finish_setup">完成设置</string>
@@ -1270,6 +1276,8 @@
     <string name="brand_dev_hide_global">隐藏全局模式（品牌关闭时也生效）</string>
     <string name="brand_dev_user_name">用户显示名称</string>
     <string name="brand_dev_greeting">问候语</string>
+    <string name="brand_dev_primary_group">主代理组（策略）</string>
+    <string name="brand_dev_group_layout">代理组布局：tabs / dropdown（策略）</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">运营商 %1$d</string>
     <string name="brand_dev_sample_tagline">快速安全</string>
@@ -1329,4 +1337,6 @@
     <string name="chain_saved_offline">代理链已保存。VPN 未启动；下次连接将使用出口订阅和此代理链。</string>
     <string name="chain_connected">已选择代理链。流量通过入口并从第二个服务器出口。</string>
     <string name="chain_removed">代理链已删除。订阅恢复普通路由。</string>
+    <string name="proxy_layout_show_dropdown">以下拉列表显示分组</string>
+    <string name="proxy_layout_show_tabs">以标签页显示分组</string>
 </resources>

@@ -91,6 +91,16 @@
                 android:textAppearance="@style/TextAppearance.App.BodySmall"
                 android:textColor="?attr/colorOnSurfaceVariant" />
             <TextView
+                android:id="@+id/subscription_updated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="sans-serif"
+                app:fontFamily="sans-serif"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
+            <TextView
                 android:id="@+id/subscription_update_status"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

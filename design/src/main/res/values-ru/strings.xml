@@ -534,8 +534,12 @@
     <string name="proxy_switch_selector_failed">Не удалось сменить прокси. Текущие соединения не тронуты.</string>
     <string name="proxy_switch_close_connections_failed">Прокси сменён, но активные соединения закрыть не удалось.</string>
     <string name="network_switch_reaction">Реагировать на смену сети</string>
-    <string name="reality_mlkem_compat">REALITY: предлагать ML-KEM (Xray 26.9+)</string>
-    <string name="reality_mlkem_compat_summary">Добавляет key share X25519MLKEM768 и отпечаток chrome ко всем нодам REALITY. Нужно серверам на Xray-core 26.9.8+, но старые серверы молча бросают такое рукопожатие, и ноды перестают подключаться. Держите выключенным, пока оператор не попросит.</string>
+    <string name="reality_mlkem_policy">REALITY: key share ML-KEM</string>
+    <string name="reality_mlkem_auto">Авто: подбирать по серверу (рекомендуется)</string>
+    <string name="reality_mlkem_on">Всегда предлагать (только Xray 26.9+)</string>
+    <string name="reality_mlkem_off">Никогда (только старые Xray)</string>
+    <string name="reality_client_version">REALITY: версия клиента</string>
+    <string name="reality_client_version_placeholder">По умолчанию ядра (формат Xray x.y.z)</string>
     <string name="network_switch_reaction_summary">При смене сети (Wi-Fi ↔ мобильный интернет) сразу закрывать устаревшие соединения и перепроверять группы прокси — автоматические группы мгновенно выбирают рабочий сервер, не дожидаясь следующей плановой проверки.</string>
 
     <string name="bypass_private_network">Игнорировать частные сети</string>
@@ -1276,6 +1280,8 @@
     <string name="subscription_auto_update_off">Автообновление выключено</string>
     <string name="subscription_updating">Обновляем подписку…</string>
     <string name="subscription_update_error">Не удалось обновить. Сохранённая подписка остаётся доступной.</string>
+    <string name="profile_updated_fmt">Обновлено %s</string>
+    <string name="profile_updated_just_now">Обновлено только что</string>
     <string name="subscription_retry">Повторить</string>
     <string name="subscription_activating">Выбираем подписку…</string>
     <string name="subscription_finish_setup">Завершить настройку</string>
@@ -1341,6 +1347,8 @@
     <string name="brand_dev_hide_global">Скрыть глобальный режим (действует и без брендинга)</string>
     <string name="brand_dev_user_name">Отображаемое имя пользователя</string>
     <string name="brand_dev_greeting">Приветствие</string>
+    <string name="brand_dev_primary_group">Основная группа прокси (политика)</string>
+    <string name="brand_dev_group_layout">Раскладка групп прокси: tabs / dropdown (политика)</string>
     <string name="brand_dev_url_format">%1$s (URL)</string>
     <string name="brand_dev_sample_name">Оператор %1$d</string>
     <string name="brand_dev_sample_tagline">Быстрое и безопасное подключение</string>
@@ -1400,4 +1408,6 @@
     <string name="chain_saved_offline">Цепочка сохранена. VPN не запускался; следующее подключение использует выбранную выходную подписку и эту цепочку.</string>
     <string name="chain_connected">Цепочка выбрана. Трафик проходит через вход и выходит через второй сервер.</string>
     <string name="chain_removed">Цепочка удалена. Подписка снова использует обычную маршрутизацию.</string>
+    <string name="proxy_layout_show_dropdown">Группы выпадающими списками</string>
+    <string name="proxy_layout_show_tabs">Группы вкладками</string>
 </resources>

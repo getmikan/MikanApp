@@ -126,12 +126,27 @@ jobs:
             exit 0
           fi
           version="${GITHUB_REF_NAME#v}"
+          # A tag with a suffix (v0.2.0-beta.1) is a signed test build: published as a
+          # pre-release and never marked latest, so the in-app updater (releases/latest) and
+          # the direct download links skip it. Its notes are docs/releases/<version>.md, or
+          # generated when that file is absent; a stable tag always needs its notes file.
+          flags=()
           notes="docs/releases/${version}.md"
-          if [ ! -s "$notes" ]; then
-            echo "Release notes missing: $notes (English text with a Russian details section required)."
-            exit 1
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            flags=(--prerelease --latest=false)
+            if [ -s "$notes" ]; then
+              flags+=(--notes-file "$notes")
+            else
+              flags+=(--generate-notes)
+            fi
+          else
+            if [ ! -s "$notes" ]; then
+              echo "Release notes missing: $notes (English text with a Russian details section required)."
+              exit 1
+            fi
+            flags=(--notes-file "$notes")
           fi
           (cd release-artifacts && sha256sum *.apk > SHA256SUMS.txt)
           gh release create "${GITHUB_REF_NAME}" --verify-tag \
-            --title "Mikan ${version}" --notes-file "$notes" \
+            --title "Mikan ${version}" "${flags[@]}" \
             release-artifacts/*.apk release-artifacts/SHA256SUMS.txt

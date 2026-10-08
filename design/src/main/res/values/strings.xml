@@ -689,8 +689,12 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="proxy_switch_selector_failed">Could not switch proxy. Existing connections were left untouched.</string>
     <string name="proxy_switch_close_connections_failed">Proxy switched, but active connections could not be closed.</string>
     <string name="network_switch_reaction">React to network changes</string>
-    <string name="reality_mlkem_compat">REALITY: offer ML-KEM (Xray 26.9+)</string>
-    <string name="reality_mlkem_compat_summary">Adds the X25519MLKEM768 key share and the chrome fingerprint to every REALITY node. Required by Xray-core 26.9.8+ servers, but older servers silently drop such handshakes and nodes stop connecting. Keep off unless your operator asks for it.</string>
+    <string name="reality_mlkem_policy">REALITY: ML-KEM key share</string>
+    <string name="reality_mlkem_auto">Auto: learn per server (recommended)</string>
+    <string name="reality_mlkem_on">Always offer (Xray 26.9+ only)</string>
+    <string name="reality_mlkem_off">Never offer (old Xray only)</string>
+    <string name="reality_client_version">REALITY: client version</string>
+    <string name="reality_client_version_placeholder">Core default (Xray-style x.y.z)</string>
     <string name="network_switch_reaction_summary">When the device switches networks (Wi-Fi ↔ mobile data), immediately close stale connections and re-test proxy groups so automatic groups pick a working server right away — instead of waiting for the next scheduled health check.</string>
 
     <string name="bypass_private_network">Bypass Private Network</string>
@@ -1292,6 +1296,8 @@ Password: %4$s</string>
     <string name="subscription_auto_update_off">Auto-update is off</string>
     <string name="subscription_updating">Updating subscription…</string>
     <string name="subscription_update_error">Could not update. Your saved subscription is still available.</string>
+    <string name="profile_updated_fmt">Updated %s</string>
+    <string name="profile_updated_just_now">Updated just now</string>
     <string name="subscription_retry">Retry</string>
     <string name="subscription_activating">Selecting subscription…</string>
     <string name="subscription_finish_setup">Finish setup</string>
@@ -1357,6 +1363,8 @@ Password: %4$s</string>
     <string name="brand_dev_hide_global">Hide Global mode (also applies when branding is off)</string>
     <string name="brand_dev_user_name">User display name</string>
     <string name="brand_dev_greeting">Greeting</string>
+    <string name="brand_dev_primary_group">Primary proxy group (policy)</string>
+    <string name="brand_dev_group_layout">Proxy group layout: tabs / dropdown (policy)</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">Operator %1$d</string>
     <string name="brand_dev_sample_tagline">Fast and secure</string>
@@ -1409,4 +1417,6 @@ Password: %4$s</string>
     <string name="chain_saved_offline">Chain saved. VPN has not been started; your next connection will use the selected exit subscription and this chain.</string>
     <string name="chain_connected">Chain selected. Traffic passes through the entry and exits through the second server.</string>
     <string name="chain_removed">Chain removed. The subscription uses its normal routing again.</string>
+    <string name="proxy_layout_show_dropdown">Show groups as dropdown lists</string>
+    <string name="proxy_layout_show_tabs">Show groups as tabs</string>
 </resources>

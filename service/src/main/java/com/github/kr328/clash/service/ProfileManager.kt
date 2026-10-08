@@ -1429,7 +1429,7 @@ class ProfileManager(private val context: Context) : IProfileManager,
                 store.geoDataCustomGeoIp, store.geoDataCustomGeoSite, store.geoDataCustomMmdb, store.geoDataCustomAsn)
             com.github.kr328.clash.service.util.ConfigComposer.compose(base, layer.copy(subscriptionChain = null), urls,
                 store.proxyHardeningMode, scriptRunner = ConfigScriptPolicy.runnerFor(context, uuid, profileName),
-                realityCompat = store.realityMlkemCompat).also { require(Clash.validateProfileBytes(it) == null) }
+                realityCompat = store.realityComposeRewrite).also { require(Clash.validateProfileBytes(it) == null) }
         }
     }
 
@@ -1663,9 +1663,14 @@ class ProfileManager(private val context: Context) : IProfileManager,
     }
 
     private fun resolveUpdatedAt(uuid: UUID): Long {
-        return context.pendingDir.resolve(uuid.toString()).directoryLastModified
-            ?: context.importedDir.resolve(uuid.toString()).directoryLastModified
-            ?: -1
+        context.pendingDir.resolve(uuid.toString()).directoryLastModified?.let { return it }
+        val importedDir = context.importedDir.resolve(uuid.toString())
+        // subscription.yaml is written only when the subscription is fetched / committed; the
+        // directory-wide max also caught config.yaml, which is re-composed on every VPN start and
+        // mode switch, so "last updated" drifted to "last connected".
+        File(importedDir, ProfileComposer.SUBSCRIPTION_FILE).takeIf { it.isFile }
+            ?.let { return it.lastModified() }
+        return importedDir.directoryLastModified ?: -1
     }
 
     private suspend fun nextProfileOrder(): Long {
