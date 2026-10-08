@@ -126,6 +126,8 @@ class ProfileAdapter(
     private var sheetDelayPatcher: ((proxyName: String) -> Unit)? = null
     /** Re-renders an open picker sheet when live group detail lands (header summaries / new rows). */
     private var sheetDetailsRefresher: (() -> Unit)? = null
+    /** Which group's "ping all" is in flight per profile, so the dropdown layout spins on the right header. */
+    private val pingingGroupByUuid = HashMap<UUID, String>()
     /** Operator default for the picker layout (`X-Brand-Proxy-Group-Layout`), used until the user toggles. */
     private var proxyGroupLayoutDefault: String? = null
     /** Expanded groups of the dropdown picker layout, per profile, kept across sheet opens. */
@@ -1255,6 +1257,7 @@ class ProfileAdapter(
                             sort = sort,
                             filter = filter,
                             currentGroupIndex = index,
+                            manualOrders = manualOrders,
                         )
                         if (narrowing && shown.isEmpty()) return@forEachIndexed
                         val expanded = narrowing || groupName in expandedGroups
