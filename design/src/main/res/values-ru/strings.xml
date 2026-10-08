@@ -1280,6 +1280,8 @@
     <string name="subscription_auto_update_off">Автообновление выключено</string>
     <string name="subscription_updating">Обновляем подписку…</string>
     <string name="subscription_update_error">Не удалось обновить. Сохранённая подписка остаётся доступной.</string>
+    <string name="profile_updated_fmt">Обновлено %s</string>
+    <string name="profile_updated_just_now">Обновлено только что</string>
     <string name="subscription_retry">Повторить</string>
     <string name="subscription_activating">Выбираем подписку…</string>
     <string name="subscription_finish_setup">Завершить настройку</string>

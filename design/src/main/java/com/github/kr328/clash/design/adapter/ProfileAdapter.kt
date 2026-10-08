@@ -21,6 +21,7 @@ import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.util.FlagDrawableLoader
 import com.github.kr328.clash.design.util.FlagParser
+import com.github.kr328.clash.design.util.elapsedIntervalString
 import com.github.kr328.clash.design.util.ParsedFlag
 import com.github.kr328.clash.design.util.toBytesString
 import com.github.kr328.clash.design.util.ClickGuard
@@ -49,6 +50,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.color.MaterialColors
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class ProfileAdapter(
     private val onClicked: (Profile) -> Unit,
@@ -1810,6 +1812,18 @@ class ProfileAdapter(
                 com.google.android.material.R.attr.colorOnSurfaceVariant
             },
         ))
+        // "Updated 2 hours ago" for fetched subscriptions; hidden for files and unsaved drafts.
+        val showUpdated = profile.type == Profile.Type.Url && profile.imported && !profile.pending &&
+            profile.updatedAt > 0L
+        if (showUpdated) {
+            val elapsed = (System.currentTimeMillis() - profile.updatedAt).coerceAtLeast(0L)
+            binding.subscriptionUpdated.text = if (elapsed < TimeUnit.MINUTES.toMillis(1)) {
+                context.getString(R.string.profile_updated_just_now)
+            } else {
+                context.getString(R.string.profile_updated_fmt, elapsed.elapsedIntervalString(context))
+            }
+        }
+        binding.subscriptionUpdated.visibility = if (showUpdated) View.VISIBLE else View.GONE
         val updating = states.isUpdating(profile.uuid)
         val failed = states.hasUpdateError(profile.uuid)
         binding.subscriptionUpdateStatus.visibility = if (updating || failed) View.VISIBLE else View.GONE
