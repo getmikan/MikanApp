@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The selected node's check, on the corner of its flag: the accent disc, ringed in the selected
+     row's own fill (bg_proxy_node_row) so it reads apart from the flag. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="?attr/colorPrimary" />
+    <stroke
+        android:width="1.5dp"
+        android:color="?attr/colorSurfaceContainer" />
+</shape>
