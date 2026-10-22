@@ -85,6 +85,7 @@ internal class SubscriptionDetailsSheet(
             if (profile.expire > 0L && profile.expire <= System.currentTimeMillis()) MaterialR.attr.colorError
             else MaterialR.attr.colorOnSurfaceVariant,
         ))
+        bindServerGroups(sheet, profile)
         sheet.detailUpdated.text = if (profile.updatedAt > 0L) {
             context.getString(R.string.subscription_updated_at,
                 java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT)
@@ -128,6 +129,24 @@ internal class SubscriptionDetailsSheet(
         sheet.detailUpdateStatus.visibility = if (failed) View.VISIBLE else View.GONE
         sheet.detailUpdateStatus.setText(R.string.subscription_update_error)
         sheet.detailUpdateStatus.setTextColor(context.resolveThemedColor(MaterialR.attr.colorError))
+    }
+
+    /** The subscription's server groups with traffic of their own (a mikan panel's), and when it starts over. */
+    private fun bindServerGroups(sheet: BottomSheetSubscriptionBinding, profile: Profile) {
+        val serverGroups = adapter.serverGroupsByProfile[profile.uuid]
+        val groups = serverGroups?.groups?.withTraffic.orEmpty()
+        sheet.detailGroupsSection.visibility = if (groups.isEmpty()) View.GONE else View.VISIBLE
+        if (groups.isEmpty()) return
+        val page = serverGroups?.pageUrl
+        bindServerGroupRows(sheet.detailGroups, groups, compact = false, onBuy = page?.let { url -> { context.openServerGroupPage(url) } })
+        val resets = serverGroups?.groups?.resetsAt
+        sheet.detailGroupsResets.visibility = if (resets != null) View.VISIBLE else View.GONE
+        if (resets != null) {
+            sheet.detailGroupsResets.text = context.getString(
+                R.string.server_groups_resets,
+                java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(java.util.Date(resets * 1000L)),
+            )
+        }
     }
 
     fun setActivating(uuid: UUID?) {

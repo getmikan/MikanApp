@@ -1365,4 +1365,23 @@
     <string name="theme_colors_preset">配色：%1$s</string>
     <string name="theme_custom_accent_saved">自定义强调色 · %1$s</string>
     <string name="tun_stack_changed_reconnect">服务商已将网络栈更改为 %1$s，重新连接后生效。</string>
+
+    <!-- mikan 面板发送的独立流量服务器组（X-Mikan-Groups）。 -->
+    <string name="server_groups_title">服务器组</string>
+    <string name="server_groups_more">更多组：%1$d</string>
+    <string name="server_groups_resets">服务器组流量将于 %1$s 重置</string>
+    <string name="server_group_left">剩余 %1$s</string>
+    <string name="server_group_unlimited">不限流量</string>
+    <string name="server_group_unlimited_used">不限流量 · %1$s</string>
+    <string name="server_group_exhausted">已用完</string>
+    <string name="server_group_used_of">已用 %1$s / 共 %2$s</string>
+    <string name="server_group_packages_left">流量包剩余 %1$s</string>
+    <string name="server_group_apart">与主流量分开计算</string>
+    <string name="server_group_hidden">该组服务器已隐藏，直到流量重置或购买更多流量</string>
+    <string name="server_group_buy">购买流量</string>
+    <string name="server_group_buy_short">购买</string>
+    <string name="server_group_notice_one">“%1$s”的流量已用完：其服务器已隐藏</string>
+    <string name="server_group_notice_many">%1$s 的流量已用完：其服务器已隐藏</string>
+    <string name="server_group_quoted">“%1$s”</string>
+    <string name="profile_proxy_filter_server_group">组：%1$s</string>
 </resources>

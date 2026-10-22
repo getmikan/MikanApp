@@ -21,6 +21,9 @@ internal sealed class ProxyPickerFilter {
     object Selected : ProxyPickerFilter()
     object Available : ProxyPickerFilter()
     data class Provider(val name: String) : ProxyPickerFilter()
+
+    /** The servers of one mikan server group in the group shown ([proxies]: their names in the profile). */
+    data class ServerGroup(val name: String, val proxies: Set<String>) : ProxyPickerFilter()
 }
 
 /** One row of the picker list: a collapsible group header (dropdown layout only) or a node. */
@@ -128,6 +131,9 @@ internal fun applyProxyPickerControls(
                 ProxyPickerFilter.Selected -> row.selected
                 ProxyPickerFilter.Available -> row.available
                 is ProxyPickerFilter.Provider -> row.provider == filter.name
+                // Within the group shown: a server is a member of several proxy groups.
+                is ProxyPickerFilter.ServerGroup ->
+                    row.groupIndex == currentGroupIndex && row.proxy.name in filter.proxies
             }
         }
         .toList()

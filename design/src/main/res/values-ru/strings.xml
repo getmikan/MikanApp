@@ -1436,4 +1436,23 @@
     <string name="theme_colors_preset">Палитра: %1$s</string>
     <string name="theme_custom_accent_saved">Свой акцент · %1$s</string>
     <string name="tun_stack_changed_reconnect">Провайдер сменил сетевой стек на %1$s. Переподключитесь, чтобы применить.</string>
+
+    <!-- Группы серверов со своим трафиком от панели mikan (X-Mikan-Groups). -->
+    <string name="server_groups_title">Группы серверов</string>
+    <string name="server_groups_more">Ещё групп: %1$d</string>
+    <string name="server_groups_resets">Трафик групп начнётся заново %1$s</string>
+    <string name="server_group_left">осталось %1$s</string>
+    <string name="server_group_unlimited">без лимита</string>
+    <string name="server_group_unlimited_used">без лимита · %1$s</string>
+    <string name="server_group_exhausted">закончился</string>
+    <string name="server_group_used_of">Израсходовано %1$s из %2$s</string>
+    <string name="server_group_packages_left">в пакетах осталось %1$s</string>
+    <string name="server_group_apart">Считается отдельно от основного трафика</string>
+    <string name="server_group_hidden">Серверы группы скрыты, пока трафик не начнётся заново или не будет докуплен</string>
+    <string name="server_group_buy">Докупить трафик</string>
+    <string name="server_group_buy_short">Докупить</string>
+    <string name="server_group_notice_one">Трафик группы «%1$s» закончился: её серверы скрыты</string>
+    <string name="server_group_notice_many">Трафик групп %1$s закончился: их серверы скрыты</string>
+    <string name="server_group_quoted">«%1$s»</string>
+    <string name="profile_proxy_filter_server_group">Группа: %1$s</string>
 </resources>

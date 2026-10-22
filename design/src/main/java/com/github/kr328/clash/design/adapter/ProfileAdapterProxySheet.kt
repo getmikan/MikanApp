@@ -13,6 +13,7 @@ import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.dialog.SheetDragToDismiss
 import com.github.kr328.clash.design.databinding.BottomSheetProxyGroupsBinding
 import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
+import com.github.kr328.clash.design.main.bindServerGroupNotice
 import com.github.kr328.clash.design.model.ServerPingMode
 import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.design.util.ProxyOrdering
@@ -50,6 +51,14 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
     sheet.proxySheetSubName.text = profile.name
     bindSubscriptionStatus(sheet, profile, context)
     bindSubscriptionExpiry(sheet, profile, context)
+    val serverGroups = serverGroupsByProfile[profile.uuid]
+    bindServerGroupNotice(
+        sheet.proxySheetGroupNotice,
+        sheet.proxySheetGroupNoticeText,
+        sheet.proxySheetGroupNoticeBuy,
+        serverGroups?.groups,
+        serverGroups?.pageUrl,
+    )
 
     if (groupNames.isEmpty()) {
         sheet.proxySheetGroupSegments.visibility = View.GONE
@@ -115,6 +124,8 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
             ProxyPickerFilter.Available -> context.getString(R.string.profile_proxy_filter_available)
             is ProxyPickerFilter.Provider ->
                 context.getString(R.string.profile_proxy_filter_provider, f.name)
+            is ProxyPickerFilter.ServerGroup ->
+                context.getString(R.string.profile_proxy_filter_server_group, f.name)
         }
 
         /**
@@ -458,6 +469,9 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
                 .mapNotNull { it.provider }
                 .distinct()
                 .sortedWith(String.CASE_INSENSITIVE_ORDER)
+            // The mikan server groups whose servers are in the profile, in the panel's order.
+            val serverGroupFilters = serverGroupsByProfile[profile.uuid]?.groups?.groups.orEmpty()
+                .mapNotNull { g -> g.proxies?.takeIf { it.isNotEmpty() }?.let { ProxyPickerFilter.ServerGroup(g.name, it.toSet()) } }
             android.widget.PopupMenu(context, anchor).apply {
                 val fixed = listOf(
                     ProxyPickerFilter.All,
@@ -474,13 +488,17 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
                         context.getString(R.string.profile_proxy_filter_provider, p),
                     )
                 }
+                // Server group entries take ids from 10000: past any provider's.
+                serverGroupFilters.forEachIndexed { i, g ->
+                    menu.add(0, 10000 + i, 10000 + i, filterLabel(g))
+                }
                 setOnMenuItemClickListener { item ->
-                    filter = if (item.itemId >= 100) {
-                        providers.getOrNull(item.itemId - 100)
+                    filter = when {
+                        item.itemId >= 10000 -> serverGroupFilters.getOrNull(item.itemId - 10000) ?: ProxyPickerFilter.All
+                        item.itemId >= 100 -> providers.getOrNull(item.itemId - 100)
                             ?.let(ProxyPickerFilter::Provider)
                             ?: ProxyPickerFilter.All
-                    } else {
-                        fixed.getOrElse(item.itemId) { ProxyPickerFilter.All }
+                        else -> fixed.getOrElse(item.itemId) { ProxyPickerFilter.All }
                     }
                     updateControlLabels()
                     render((selectedGroupIndex[profile.uuid] ?: 0).coerceIn(0, groupNames.lastIndex))

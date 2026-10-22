@@ -85,6 +85,40 @@
                 app:fontFamily="@font/manrope_regular"
                 android:textAppearance="@style/TextAppearance.App.BodyMedium"
                 android:textColor="?attr/colorOnSurfaceVariant" />
+            <!-- Server groups with traffic of their own (a mikan panel's X-Mikan-Groups). -->
+            <LinearLayout
+                android:id="@+id/detail_groups_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:accessibilityHeading="true"
+                    android:fontFamily="@font/manrope_regular"
+                    app:fontFamily="@font/manrope_regular"
+                    android:text="@string/server_groups_title"
+                    android:textAppearance="@style/TextAppearance.App.LabelLarge"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+                <LinearLayout
+                    android:id="@+id/detail_groups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="vertical" />
+                <TextView
+                    android:id="@+id/detail_groups_resets"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/manrope_regular"
+                    app:fontFamily="@font/manrope_regular"
+                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone" />
+            </LinearLayout>
             <TextView
                 android:id="@+id/detail_updated"
                 android:layout_width="match_parent"

@@ -454,6 +454,36 @@ X-Bypass-Preset: ru
 
 ---
 
+## 6b. mikan panel extensions
+
+Headers a [mikan](https://github.com/Miroshka000/mikan) panel sends only to an app that asks for
+them with `X-Mikan-Features` (section 7). Other apps get the subscription as before, and the
+profile itself is the same for every app.
+
+### `X-Mikan-Groups`
+
+| | |
+|---|---|
+| Type | `base64:` + JSON, version `"v": 1` |
+| Status | **v1** |
+| Needs `X-Branding-Enabled`? | **No** |
+| Sent when | The request carries `X-Mikan-Features: groups` (the app always sends it) |
+| Applied to | **Home** profile card: a line per server group with traffic of its own (what is left, the used share). **Subscription sheet**: "Server groups" with used of total, what is left in packages, when the traffic starts over, and "Buy more traffic" (the `profile-web-page-url` page) for a group that ran out. **Node picker**: a badge with the group on each of its servers, a filter per group, and a notice when a group ran out and its servers left the profile. |
+| Fallback | Absent, another `v`, or a value that does not parse → no groups anywhere |
+
+```json
+{"v":1,"resets_at":1793491200,"groups":[
+ {"id":3,"name":"Premium +","mode":"own","used":3221225472,"limit":16106127360,"extra":0,
+  "left":12884901888,"state":"active","proxies":["🇺🇸 VLESS Reality","🇺🇸 Hysteria2"]}]}
+```
+
+- `mode`: `own` — a limit of its own, apart from the main traffic; `unlimited` — counted apart without a limit; `main` — the servers spend the main traffic, the app only shows the group's badge on them. An unknown mode drops that group, not the others.
+- `limit`, `extra` (left in the group's packages) and `left` (what is left with them) come with `own` only. `state: "exhausted"`: nothing is left, and the group's servers are not in the profile until the traffic starts over (`resets_at`, unix seconds) or more is bought.
+- `proxies`: the names of the group's servers in this very profile; `null` when the panel left them out to keep the header under 1.5 KB (a reverse proxy in front of a panel fails bigger headers). Groups closed to the subscriber are not sent.
+- The value travels in the profile download's `fetch-headers.json` like the rest, so it is as fresh as the last update of the subscription (mikan asks for one an hour).
+
+---
+
 ## 7. What the client sends with every subscription request
 
 Panels can rely on these request headers (full detail in [supported-headers.md](../supported-headers.md)):
@@ -466,6 +496,7 @@ Panels can rely on these request headers (full detail in [supported-headers.md](
 | `x-ver-os` | Android release, e.g. `15` |
 | `x-device-model` | Manufacturer + model |
 | `x-app-version` | App version name |
+| `x-mikan-features` | `groups`: the mikan panel extensions the app shows (section 6b) |
 
 ---
 
