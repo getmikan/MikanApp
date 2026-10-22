@@ -53,6 +53,21 @@
             android:textSize="14sp"
             android:visibility="gone"
             tools:text="US" />
+
+        <!-- The selected node's check sits on the flag's corner: a column of its own at the row's
+             end took its width from every name, selected or not. -->
+        <ImageView
+            android:id="@+id/selected_check"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/bg_selected_check_badge"
+            android:importantForAccessibility="no"
+            android:padding="2dp"
+            android:src="@drawable/ic_baseline_check"
+            android:visibility="invisible"
+            app:tint="?attr/colorOnPrimary"
+            tools:visibility="visible" />
     </FrameLayout>
 
     <LinearLayout
@@ -62,172 +77,173 @@
         android:orientation="vertical"
         android:paddingVertical="6dp">
 
-        <!-- The name takes the row's whole width: the latency sits on the badges' line below. -->
+        <!-- The name takes the row's whole width, on two lines when it needs them. -->
         <TextView
             android:id="@+id/proxy_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="1"
+            android:maxLines="2"
             android:textAppearance="@style/TextAppearance.App.BodyLarge"
             android:textColor="?attr/colorOnSurface"
             android:textStyle="bold"
-            tools:text="AuraVPN | Нидерланды | VLESS XHTTP" />
+            tools:text="🍊 Mikan | Нидерланды | VLESS XHTTP REALITY" />
 
-        <!-- One line: the protocol chips and the server group badge, then the latency. -->
+        <!-- The protocol chips and the latency share one line; the server group badge joins
+             them when it fits, else it takes the next line whole instead of a sliver. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:gravity="center_vertical"
+            android:layout_marginTop="4dp"
             android:orientation="horizontal">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/proxy_protocol_capsule"
-            android:background="@drawable/bg_proto_capsule"
-            android:clipToOutline="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:importantForAccessibility="no"
-            app:chipSpacingHorizontal="1dp"
-            app:chipSpacingVertical="1dp"
-            app:singleLine="true">
-
-            <TextView
-                android:id="@+id/proxy_type_badge"
-                android:layout_width="wrap_content"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/proxy_badges"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_proto_segment"
-                android:fontFamily="@font/manrope_semibold"
-                android:letterSpacing="0"
-                android:maxLines="1"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:textAllCaps="true"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:text="VLESS"
-                tools:textColor="@color/proto_xhttp"
-                tools:visibility="visible" />
+                android:layout_weight="1"
+                android:paddingTop="6dp"
+                android:importantForAccessibility="no"
+                app:chipSpacingHorizontal="6dp"
+                app:chipSpacingVertical="4dp"
+                app:singleLine="false">
 
-            <TextView
-                android:id="@+id/proxy_transport_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_proto_segment"
-                android:fontFamily="@font/manrope_semibold"
-                android:letterSpacing="0"
-                android:maxLines="1"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:textAllCaps="true"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:text="XHTTP"
-                tools:textColor="@color/proto_xhttp"
-                tools:visibility="visible" />
-
-            <TextView
-                android:id="@+id/proxy_reality_badge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_proto_segment"
-                android:fontFamily="@font/manrope_semibold"
-                android:letterSpacing="0"
-                android:maxLines="1"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:textAllCaps="true"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:text="REALITY"
-                tools:textColor="@color/proto_reality"
-                tools:visibility="visible" />
-        </com.google.android.material.chip.ChipGroup>
-
-        <!-- The node's server group on a mikan panel and what is left of its traffic; it gives
-             way (ellipsis) when the line is full. -->
-        <TextView
-            android:id="@+id/proxy_server_group_badge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:background="@drawable/bg_proto_capsule"
-            android:drawablePadding="4dp"
-            android:ellipsize="end"
-            android:fontFamily="@font/manrope_semibold"
-            android:gravity="center_vertical"
-            android:maxLines="1"
-            android:paddingHorizontal="6dp"
-            android:paddingVertical="2dp"
-            android:textSize="11sp"
-            android:visibility="gone"
-            app:drawableStartCompat="@drawable/ic_server_group_badge"
-            tools:text="Премиум + · осталось 11,8 ГиБ"
-            tools:visibility="visible" />
-        </LinearLayout>
-
-        <!-- Tap target: measures just this node (ProfileAdapter.onPingNode). The borderless
-             ripple lives on this wrapper; the tinted pill inside carries the level colour
-             (applyDelayStyle). Focusable so a TV d-pad can reach it too. On the badges' line it
-             takes no width from the name. -->
-        <FrameLayout
-            android:id="@+id/latency_capsule"
-            android:stateListAnimator="@animator/focus_scale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:contentDescription="@string/proxy_ping_node"
-            android:focusable="true"
-            android:minWidth="56dp"
-            android:minHeight="32dp">
-
-            <LinearLayout
-                android:id="@+id/latency_pill"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/bg_delay_pill"
-                android:gravity="center_vertical"
-                android:minHeight="28dp"
-                android:orientation="horizontal"
-                android:paddingHorizontal="6dp">
-
-                <View
-                    android:id="@+id/latency_dot"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_marginEnd="4dp"
-                    android:background="@drawable/dot_circle"
-                    android:importantForAccessibility="no" />
-
-                <TextView
-                    android:id="@+id/proxy_delay"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/proxy_protocol_capsule"
+                    android:background="@drawable/bg_proto_capsule"
+                    android:clipToOutline="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:ellipsize="end"
+                    android:importantForAccessibility="no"
+                    app:chipSpacingHorizontal="1dp"
+                    app:chipSpacingVertical="1dp"
+                    app:singleLine="true">
+
+                    <TextView
+                        android:id="@+id/proxy_type_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_proto_segment"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:letterSpacing="0"
+                        android:maxLines="1"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp"
+                        android:textAllCaps="true"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="VLESS"
+                        tools:textColor="@color/proto_xhttp"
+                        tools:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/proxy_transport_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_proto_segment"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:letterSpacing="0"
+                        android:maxLines="1"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp"
+                        android:textAllCaps="true"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="XHTTP"
+                        tools:textColor="@color/proto_xhttp"
+                        tools:visibility="visible" />
+
+                    <TextView
+                        android:id="@+id/proxy_reality_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_proto_segment"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:letterSpacing="0"
+                        android:maxLines="1"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="2dp"
+                        android:textAllCaps="true"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="REALITY"
+                        tools:textColor="@color/proto_reality"
+                        tools:visibility="visible" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- The node's server group on a mikan panel and what is left of its traffic;
+                     wider than a whole line (a long name, a large font), it wraps, never cut. -->
+                <TextView
+                    android:id="@+id/proxy_server_group_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_proto_capsule"
+                    android:drawablePadding="4dp"
                     android:fontFamily="@font/manrope_semibold"
-                    android:gravity="center"
-                    android:maxWidth="64dp"
-                    android:maxLines="1"
-                    android:textAppearance="@style/TextAppearance.App.LabelMedium"
-                    android:textStyle="bold"
-                    app:fontFamily="@font/manrope_semibold"
-                    tools:text="47ms" />
-            </LinearLayout>
-        </FrameLayout>
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="2dp"
+                    android:textSize="11sp"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_server_group_badge"
+                    tools:text="Премиум + · осталось 11,8 ГиБ"
+                    tools:visibility="visible" />
+            </com.google.android.material.chip.ChipGroup>
+
+            <!-- Tap target: measures just this node (ProfileAdapter.onPingNode). The borderless
+                 ripple lives on this wrapper; the tinted pill inside carries the level colour
+                 (applyDelayStyle). Focusable so a TV d-pad can reach it too. Level with the
+                 first line of badges (their padding above centres them on it). -->
+            <FrameLayout
+                android:id="@+id/latency_capsule"
+                android:stateListAnimator="@animator/focus_scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/proxy_ping_node"
+                android:focusable="true"
+                android:minWidth="56dp"
+                android:minHeight="32dp">
+
+                <LinearLayout
+                    android:id="@+id/latency_pill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_delay_pill"
+                    android:gravity="center_vertical"
+                    android:minHeight="28dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="6dp">
+
+                    <View
+                        android:id="@+id/latency_dot"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/dot_circle"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/proxy_delay"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/manrope_semibold"
+                        android:gravity="center"
+                        android:maxWidth="64dp"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.App.LabelMedium"
+                        android:textStyle="bold"
+                        app:fontFamily="@font/manrope_semibold"
+                        tools:text="47ms" />
+                </LinearLayout>
+            </FrameLayout>
         </LinearLayout>
 
         <TextView
@@ -243,15 +259,4 @@
             tools:text="vless · 443"
             tools:visibility="visible" />
     </LinearLayout>
-
-    <ImageView
-        android:id="@+id/selected_check"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="8dp"
-        android:importantForAccessibility="no"
-        android:src="@drawable/ic_baseline_check"
-        android:visibility="invisible"
-        app:tint="?attr/colorPrimary"
-        tools:visibility="visible" />
 </LinearLayout>
