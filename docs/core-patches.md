@@ -1,7 +1,7 @@
 # Core patch series
 
 The core is [Citrus](https://github.com/getmikan/Citrus), Mikan's mihomo fork, checked out unmodified
-at `core/src/foss/golang/clash` (pinned to `dev` commit `843a37008f6f65e441a531647efb6afb8194959c` (2026-10-21)). It keeps the module path
+at `core/src/foss/golang/clash` (pinned to `dev` commit `ca8204d95c32664303a00ba917a45df8254adb1f` (2026-10-21)). It keeps the module path
 `github.com/metacubex/mihomo`, so the bridge imports stay as they are. Citrus' own `replace`
 directives (utls, http, tls, smux forks) must be repeated in `core/src/main/golang/go.mod` and
 `core/src/foss/golang/go.mod`: Go applies `replace` only in the main module. The subscription
@@ -55,6 +55,14 @@ handshake timeout and HTTP/2 ping tests. Do not reapply the superseded TrustTunn
    The tag is pinned; nothing forces a bump.
 
 ## Current series
+
+The pin includes [Citrus#156](https://github.com/getmikan/Citrus/pull/156): GeoIP,
+GeoSite, MMDB and ASN SHA-256 pins are optional again. This also restores loading
+Android's bundled databases, not just remote updates. Explicit pins are still
+enforced. `native/snapshot/geo_android_oracle_test.go` exercises bundled lowercase
+asset names, missing-file downloads and manual updates through the same engine
+entry points used by the bridge; incorrect pins must preserve the installed file.
+The core's geodata tests also run in `goTestNativeSnapshot`.
 
 Citrus already carries what patches 0001-0004 used to add on top of stock mihomo: a configurable
 REALITY client version (per proxy, `client-version`), the X25519MLKEM768 key share (on by default,
