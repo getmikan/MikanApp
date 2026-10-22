@@ -84,6 +84,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <!-- mikan:// is ours alone: a mikan panel's "Add" button opens this app, not
+                     whichever Clash app took the shared schemes. -->
+                <data android:scheme="mikan"/>
                 <data android:scheme="clash"/>
                 <data android:scheme="clashmeta"/>
                 <data android:scheme="clashfest"/>
