@@ -56,6 +56,14 @@ handshake timeout and HTTP/2 ping tests. Do not reapply the superseded TrustTunn
 
 ## Current series
 
+The pin includes [Citrus#156](https://github.com/getmikan/Citrus/pull/156): GeoIP,
+GeoSite, MMDB and ASN SHA-256 pins are optional again. This also restores loading
+Android's bundled databases, not just remote updates. Explicit pins are still
+enforced. `native/snapshot/geo_android_oracle_test.go` exercises bundled lowercase
+asset names, missing-file downloads and manual updates through the same engine
+entry points used by the bridge; incorrect pins must preserve the installed file.
+The core's geodata tests also run in `goTestNativeSnapshot`.
+
 Citrus already carries what patches 0001-0004 used to add on top of stock mihomo: a configurable
 REALITY client version (per proxy, `client-version`), the X25519MLKEM768 key share (on by default,
 `support-x25519mlkem768: false` per proxy for old servers), and the TrustTunnel fixes (one TLS

@@ -7,6 +7,7 @@ require (
 	github.com/metacubex/http v0.1.8
 	github.com/metacubex/mihomo v1.19.32
 	golang.org/x/sync v0.24.0
+	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -144,7 +145,6 @@ require (
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 	golang.org/x/tools v0.51.0 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
 )
 
 replace google.golang.org/protobuf => github.com/metacubex/protobuf-go v0.0.0-20260306035419-7ceee0674686
