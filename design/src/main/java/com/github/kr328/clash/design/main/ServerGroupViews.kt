@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.View
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
@@ -83,11 +82,14 @@ internal fun bindServerGroupRows(
 private fun bindServerGroupRow(row: View, g: MikanGroups.Group, compact: Boolean, onBuy: (() -> Unit)?) {
     val context = row.context
     val accent = context.groupAccent(g.low)
-    row.findViewById<ImageView>(R.id.server_group_icon).imageTintList = ColorStateList.valueOf(accent)
-    row.findViewById<TextView>(R.id.server_group_name).text = g.name
+    row.findViewById<TextView>(R.id.server_group_name).apply {
+        text = g.name
+        TextViewCompat.setCompoundDrawableTintList(this, ColorStateList.valueOf(accent))
+    }
     val value = g.leftLabel(context)
     row.findViewById<TextView>(R.id.server_group_value).apply {
         text = value
+        visibility = if (value.isNotBlank()) View.VISIBLE else View.GONE
         setTextColor(if (g.low) accent else context.resolveThemedColor(MaterialR.attr.colorOnSurfaceVariant))
     }
     val fraction = g.usedFraction

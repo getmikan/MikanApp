@@ -14,31 +14,22 @@
     android:orientation="vertical"
     android:paddingVertical="4dp">
 
-    <LinearLayout
+    <!-- The name and what is left share a line while they fit; else what is left goes under the
+         name: the Home card's column is narrow, and neither may be cut short. -->
+    <com.github.kr328.clash.design.view.LabelValueLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:importantForAccessibility="noHideDescendants"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/server_group_icon"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_baseline_stack"
-            app:tint="?attr/colorPrimary" />
+        android:importantForAccessibility="noHideDescendants">
 
         <TextView
             android:id="@+id/server_group_name"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
+            android:drawablePadding="8dp"
             android:fontFamily="@font/manrope_semibold"
-            android:maxLines="1"
             android:textAppearance="@style/TextAppearance.App.LabelLarge"
             android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_server_group_row"
             app:fontFamily="@font/manrope_semibold"
             tools:text="Премиум +" />
 
@@ -46,12 +37,10 @@
             android:id="@+id/server_group_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:maxLines="1"
             android:textAppearance="@style/TextAppearance.App.LabelMedium"
             android:textColor="?attr/colorOnSurfaceVariant"
             tools:text="осталось 11,8 ГиБ" />
-    </LinearLayout>
+    </com.github.kr328.clash.design.view.LabelValueLayout>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/server_group_progress"

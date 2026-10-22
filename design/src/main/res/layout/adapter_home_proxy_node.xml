@@ -174,17 +174,16 @@
                         tools:visibility="visible" />
                 </com.google.android.material.chip.ChipGroup>
 
-                <!-- The node's server group on a mikan panel and what is left of its traffic. -->
+                <!-- The node's server group on a mikan panel and what is left of its traffic;
+                     wider than a whole line (a long name, a large font), it wraps, never cut. -->
                 <TextView
                     android:id="@+id/proxy_server_group_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_proto_capsule"
                     android:drawablePadding="4dp"
-                    android:ellipsize="end"
                     android:fontFamily="@font/manrope_semibold"
                     android:gravity="center_vertical"
-                    android:maxLines="1"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="2dp"
                     android:textSize="11sp"
