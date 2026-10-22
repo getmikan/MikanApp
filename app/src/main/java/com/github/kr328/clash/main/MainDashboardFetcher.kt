@@ -11,6 +11,8 @@ import com.github.kr328.clash.core.util.trafficUpload
 import com.github.kr328.clash.design.MainDesign
 import com.github.kr328.clash.remote.Remote
 import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.service.util.ProfileServerGroups
+import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.util.withClash
 import com.github.kr328.clash.util.withProfile
 import java.util.*
@@ -38,6 +40,13 @@ internal class MainDashboardFetcher(
     private val design get() = activity.currentDesign
 
     private var lastForwardedTrafficTotal: Long = Long.MIN_VALUE
+
+    /** The server groups of each downloaded subscription (a mikan panel's), from its last download. */
+    private fun serverGroupsOf(profiles: List<Profile>): Map<UUID, ProfileServerGroups> =
+        profiles.asSequence()
+            .filter { it.imported && it.type == Profile.Type.Url }
+            .mapNotNull { p -> ProfileServerGroups.read(activity.importedDir.resolve(p.uuid.toString()))?.let { p.uuid to it } }
+            .toMap()
 
     // When the user requests a stop, the service keeps reporting serviceRunning=true for a
     // second or two while it tears down. A dashboard refresh landing in that window would
@@ -131,6 +140,8 @@ internal class MainDashboardFetcher(
         val active = withProfile { queryActive() }
         val profiles = withProfile { queryAll() }
         setProfileName(active?.name ?: status.currentProfile)
+        // Before the profiles: the Home card renders with them, groups and all.
+        setServerGroups(withContext(Dispatchers.IO) { serverGroupsOf(profiles) })
         patchProfiles(profiles)
         if (currentTab == MainDesign.MainTab.Routing) requests.trySend(MainDesign.Request.RefreshRouting)
         applyActiveBrand()

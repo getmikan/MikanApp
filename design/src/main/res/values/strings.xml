@@ -1445,4 +1445,23 @@ Password: %4$s</string>
     <string name="theme_colors_preset">Palette: %1$s</string>
     <string name="theme_custom_accent_saved">Custom accent · %1$s</string>
     <string name="tun_stack_changed_reconnect">Your provider changed the network stack to %1$s. Reconnect to apply it.</string>
+
+    <!-- Server groups with traffic of their own, from a mikan panel (X-Mikan-Groups). -->
+    <string name="server_groups_title">Server groups</string>
+    <string name="server_groups_more">More groups: %1$d</string>
+    <string name="server_groups_resets">The groups\' traffic starts over on %1$s</string>
+    <string name="server_group_left">%1$s left</string>
+    <string name="server_group_unlimited">Unlimited</string>
+    <string name="server_group_unlimited_used">Unlimited · %1$s</string>
+    <string name="server_group_exhausted">Used up</string>
+    <string name="server_group_used_of">%1$s used of %2$s</string>
+    <string name="server_group_packages_left">%1$s left in packages</string>
+    <string name="server_group_apart">Counted apart from the main traffic</string>
+    <string name="server_group_hidden">Its servers are hidden until the traffic starts over or more is bought</string>
+    <string name="server_group_buy">Buy more traffic</string>
+    <string name="server_group_buy_short">Buy more</string>
+    <string name="server_group_notice_one">The traffic of “%1$s” is used up: its servers are hidden</string>
+    <string name="server_group_notice_many">The traffic of %1$s is used up: their servers are hidden</string>
+    <string name="server_group_quoted">“%1$s”</string>
+    <string name="profile_proxy_filter_server_group">Group: %1$s</string>
 </resources>

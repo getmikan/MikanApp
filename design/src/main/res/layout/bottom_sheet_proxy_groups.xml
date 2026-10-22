@@ -72,6 +72,49 @@
                 tools:text="Connected" />
         </LinearLayout>
 
+        <!--
+          A server group whose own traffic ran out: its servers left the profile, so the list
+          would just be shorter without a word. Says which group and offers to buy more.
+        -->
+        <LinearLayout
+            android:id="@+id/proxy_sheet_group_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_m3_expiry_chip_warning"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingVertical="4dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="4dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:id="@+id/proxy_sheet_group_notice_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:accessibilityLiveRegion="polite"
+                android:paddingVertical="8dp"
+                android:textAppearance="@style/TextAppearance.App.BodySmall"
+                android:textColor="?attr/colorOnErrorContainer"
+                tools:text="Трафик группы «Игры» закончился: её серверы скрыты" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/proxy_sheet_group_notice_buy"
+                style="@style/AppButton.Text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:minHeight="48dp"
+                android:stateListAnimator="@animator/focus_scale"
+                android:text="@string/server_group_buy_short"
+                android:textColor="?attr/colorOnErrorContainer"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
+
         <!-- Custom segmented group selector -->
         <HorizontalScrollView
             android:id="@+id/proxy_sheet_group_scroll"

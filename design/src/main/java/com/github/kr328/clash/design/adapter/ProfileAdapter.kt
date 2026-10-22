@@ -28,6 +28,7 @@ import com.github.kr328.clash.common.branding.BrandManifest
 import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.model.ProxyGroupPreviewRow
 import com.github.kr328.clash.service.model.ProxyTransportInfo
+import com.github.kr328.clash.service.util.ProfileServerGroups
 import com.google.android.material.color.MaterialColors
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -76,6 +77,8 @@ class ProfileAdapter(
     internal var offlinePreviewByProfile: Map<UUID, Map<String, ProxyGroupPreviewRow>> = emptyMap()
     internal var offlineSelectionsByProfile: Map<UUID, Map<String, String>> = emptyMap()
     internal var transportInfoByProfile: Map<UUID, Map<String, ProxyTransportInfo>> = emptyMap()
+    /** Server groups of each mikan subscription: the picker's badges, notice and filters. */
+    internal var serverGroupsByProfile: Map<UUID, ProfileServerGroups> = emptyMap()
     private val cachedOfflinePreviewByProfile = mutableMapOf<UUID, Map<String, ProxyGroupPreviewRow>>()
     private val cachedOfflineSelectionsByProfile = mutableMapOf<UUID, Map<String, String>>()
     internal val selectedGroupIndex = mutableMapOf<UUID, Int>()

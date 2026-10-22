@@ -76,3 +76,16 @@ func TestFilterPersistsProxyGroupLayoutHeader(t *testing.T) {
 		t.Fatalf("proxy group layout header not persisted: %#v", got)
 	}
 }
+
+// The server groups of a mikan panel reach the UI only through the snapshot: the profile's own
+// download is the one request that carries them.
+func TestFilterPersistsMikanGroupsHeader(t *testing.T) {
+	got := Filter(map[string][]string{
+		"X-Mikan-Groups": {"base64:eyJ2IjoxLCJncm91cHMiOltdfQ=="},
+	})
+
+	want := map[string]string{"x-mikan-groups": "base64:eyJ2IjoxLCJncm91cHMiOltdfQ=="}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("server groups header not persisted: %#v", got)
+	}
+}

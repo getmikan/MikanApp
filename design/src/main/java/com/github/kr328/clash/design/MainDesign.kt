@@ -16,9 +16,11 @@ import com.github.kr328.clash.design.main.MainPager
 import com.github.kr328.clash.design.main.PowerVisuals
 import com.github.kr328.clash.design.main.SubscriptionDetailsSheet
 import com.github.kr328.clash.design.main.SubscriptionUpdates
+import com.github.kr328.clash.design.main.HOME_GROUPS_MAX
 import com.github.kr328.clash.design.main.bindAnnouncementCard
 import com.github.kr328.clash.design.main.bindMainNodeFlag
 import com.github.kr328.clash.design.main.bindOperatorPage
+import com.github.kr328.clash.design.main.bindServerGroupRows
 import com.github.kr328.clash.design.main.profileUsageLabel
 import com.github.kr328.clash.design.main.profilesTabTouchHelper
 import com.github.kr328.clash.design.main.showAboutSheet
@@ -46,6 +48,7 @@ import com.github.kr328.clash.design.R
 import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.model.ProxyGroupPreviewRow
 import com.github.kr328.clash.service.model.ProxyTransportInfo
+import com.github.kr328.clash.service.util.ProfileServerGroups
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.withContext
@@ -485,11 +488,32 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         }
     }
 
+    /**
+     * Server groups of each mikan subscription, from the headers of its last download: the
+     * Home card, the subscription sheet and the node picker show them.
+     */
+    suspend fun setServerGroups(groups: Map<UUID, ProfileServerGroups>) {
+        withContext(Dispatchers.Main) {
+            if (groups == profileAdapter.serverGroupsByProfile) return@withContext
+            profileAdapter.serverGroupsByProfile = groups
+            tabProfileAdapter.serverGroupsByProfile = groups
+            renderActiveProfileCard(activeProfileForQuickActions)
+            refreshSubscriptionDetails()
+        }
+    }
+
     private fun renderActiveProfileCard(profile: Profile?) {
         val p = profile
         binding.mainActiveProfileValue.text = p?.name.orEmpty().ifBlank { context.getString(R.string.not_selected) }
         binding.mainActiveProfileMeta.text = p?.let { profileUsageLabel(context, uiStore, it) }.orEmpty()
         binding.mainActiveProfileMeta.visibility = if (p != null) View.VISIBLE else View.GONE
+        // The groups with traffic of their own, under the main traffic; the rest in the sheet.
+        val groups = p?.let { profileAdapter.serverGroupsByProfile[it.uuid] }?.groups?.withTraffic.orEmpty()
+        bindServerGroupRows(binding.mainActiveProfileGroups, groups.take(HOME_GROUPS_MAX), compact = true, onBuy = null)
+        binding.mainActiveProfileGroups.visibility = if (groups.isEmpty()) View.GONE else View.VISIBLE
+        val more = groups.size - HOME_GROUPS_MAX
+        binding.mainActiveProfileGroupsMore.visibility = if (more > 0) View.VISIBLE else View.GONE
+        if (more > 0) binding.mainActiveProfileGroupsMore.text = context.getString(R.string.server_groups_more, more)
         val showUpdate = p?.imported == true && p.type == Profile.Type.Url
         binding.mainActiveProfileUpdate.visibility = if (showUpdate) View.VISIBLE else View.GONE
         if (p != null) bindSubscriptionUpdateButton(binding.mainActiveProfileUpdate, tabProfileAdapter.states, p.uuid)

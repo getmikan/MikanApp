@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.databinding.BottomSheetProxyGroupsBinding
+import com.github.kr328.clash.design.main.bindServerGroupBadge
 import com.github.kr328.clash.design.util.FlagDrawableLoader
 import com.github.kr328.clash.design.util.FlagParser
 import com.github.kr328.clash.design.util.layoutInflater
@@ -248,6 +249,12 @@ internal fun ProfileAdapter.bindProxyNodeRow(
     row.findViewById<View>(R.id.proxy_protocol_capsule).visibility =
         if (typeBadge.visibility == View.VISIBLE || transportBadge.visibility == View.VISIBLE ||
             realityBadge.visibility == View.VISIBLE) View.VISIBLE else View.GONE
+    // A server of a mikan server group: which traffic it spends. Groups of the profile itself
+    // (url-test and the like) are nobody's server.
+    bindServerGroupBadge(
+        row.findViewById(R.id.proxy_server_group_badge),
+        if (p.type.group) null else serverGroupsByProfile[profile.uuid]?.groups?.groupOf(p.name),
+    )
 
     val rawSubtitle = p.subtitle
         .takeIf { it.isNotBlank() && !it.equals(typeName, ignoreCase = true) }
