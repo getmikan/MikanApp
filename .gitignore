@@ -1,7 +1,9 @@
 .gradle
+.kotlin/
 build/
 /app/foss/release
 /app/premium/release
+/release-play/
 /captures
 
 # Ignore Gradle GUI config

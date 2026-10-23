@@ -1,11 +1,17 @@
-A Graphical user interface of Clash.Meta for Android.
+Mikan is an open-source Android VPN and proxy client powered by Citrus, a core based on mihomo. Import a compatible subscription or your own server configuration, select a server and connect.
 
-<h3>Features</h3>
-<ul>
-<li>Local HTTP/HTTPS/SOCKS server</li>
-<li>VMess, Shadowsocks, Trojan, Snell protocol support for remote connections</li>
-<li>Built-in DNS server that aims to minimize DNS pollution attack impact, supports DoH/DoT upstream and fake IP</li>
-<li>Rules based off domains, GEOIP, IPCIDR or Process to forward packets to different nodes</li>
-<li>Remote groups allow users to implement powerful rules. Supports automatic fallback, load balancing or auto select node based off latency</li>
-<li>Remote providers, allowing users to get node lists remotely instead of hardcoding in config</li>
-</ul>
+An expressive Material 3 interface
+An animated mandarin connection button, country flags, compact navigation, light and dark themes, OLED mode and color palettes.
+
+Subscriptions and servers
+Import from a link, QR code, clipboard or file. Search servers, filter groups, check latency and keep your own server order. Compatible Mikan panels can provide group traffic and subscription details, and open the app with mikan:// links.
+
+Control your routing
+Choose Rule or Global mode, route selected apps through the VPN, add rules, edit DNS and hosts, and configure proxy chains.
+
+Connection tools
+View live connections and logs. Use the home-screen widget, Quick Settings tile or supported Android TV interface.
+
+Mikan uses Android's VPN permission to route traffic through the configuration you choose. It does not include a VPN subscription or provide servers: a compatible subscription or server configuration is required.
+
+Source code: https://github.com/getmikan/MikanApp

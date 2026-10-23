@@ -1,232 +1,187 @@
-<h1 align="center">
-  <img src="design/mikan.png" alt="Mikan" width="240" />
-  <br />Mikan
-</h1>
+<p align="center">
+  <img src="design/mikan.png" width="112" alt="Mikan mandarin" />
+</p>
+
+<h1 align="center">Mikan for Android</h1>
 
 <p align="center">
-  <b>Clash Meta (Mihomo)</b> client for <b>Android</b> — phone &amp; Android&nbsp;TV<br />
-  Redesigned Home · cleaner subscriptions &amp; nodes · routing tools · safe defaults
+  A Material 3 VPN client powered by <a href="https://github.com/getmikan/Citrus">Citrus</a>.<br />
+  Your subscriptions, servers and routing in one place.
 </p>
 
 <p align="center">
-  <a href="https://github.com/getmikan/MikanApp/releases"><b>⬇️ Download</b></a> ·
-  <a href="https://github.com/Nemu-x/ClashFest/wiki"><b>📖 Wiki</b></a> ·
-  <a href="https://github.com/getmikan/MikanApp/issues">Feedback</a> ·
-  <a href="https://github.com/getmikan/MikanApp/releases">Releases</a> ·
+  <a href="https://github.com/getmikan/MikanApp/releases">Download</a> ·
   <a href="https://github.com/getmikan/MikanApp/issues">Issues</a> ·
-  <a href="ROADMAP.md">Roadmap</a> ·
-  <a href="LICENSE">License</a>
+  <a href="https://t.me/mikanvpn">News</a> ·
+  <a href="ROADMAP.md">Roadmap</a>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/license-GPLv3-green.svg" alt="License: GPL v3" />
-  <img src="https://img.shields.io/badge/platform-Android-3DDC84" alt="Platform: Android" />
-  <img src="https://img.shields.io/github/v/release/getmikan/MikanApp?display_name=tag" alt="Latest Release" />
-  <img src="https://img.shields.io/badge/status-Active%20development-1f8bff" alt="Status: Active development" />
-</p>
+**Mikan** is an open-source Android VPN and proxy client. It runs **Citrus**,
+Mikan's core based on [mihomo](https://github.com/MetaCubeX/mihomo), and works
+with compatible Clash / Clash.Meta subscriptions and configuration files.
+Mikan is a client: bring a subscription or your own server configuration.
 
----
+The current interface uses expressive Material 3 surfaces, an animated mandarin
+connection button, country flags and a compact navigation capsule. Light, dark,
+OLED and preset palettes share the same screens and controls.
 
-**Mikan** is an Android client in the **Clash Meta / Mihomo** family — a redesigned Home
-experience, cleaner subscription/node flows, routing-focused tools, and practical safety
-defaults for everyday use.
+## Download and update
 
-> 💬 Questions, bugs, feature requests → **[GitHub issues](https://github.com/getmikan/MikanApp/issues)**.
+Signed releases and release notes: **[GitHub Releases](https://github.com/getmikan/MikanApp/releases)**.
 
-> 📣 News and updates → **[Mikan Telegram channel](https://t.me/mikanvpn)**.
-
----
-
-## Downloads
-
-**Latest release — direct downloads** (always point to the newest version; also on the [download page](https://github.com/getmikan/MikanApp/releases)):
-
-| Device | Download |
+| Device | APK |
 | --- | --- |
-| Phone / tablet (64-bit ARM — every phone of the last decade) | [mikan-alpha-arm64-v8a.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-arm64-v8a.apk) |
-| 32-bit ARM (very old phones, some TV boxes) | [mikan-alpha-armeabi-v7a.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-armeabi-v7a.apk) |
-| Universal (all ABIs in one, largest) | [mikan-alpha-universal.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-universal.apk) |
-| x86_64 (emulators, Chromebooks, x86 TV boxes) | [mikan-alpha-x86_64.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-x86_64.apk) |
-| x86 (32-bit Intel) | [mikan-alpha-x86.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-x86.apk) |
+| Modern Android phone or tablet (ARM64) | [mikan-alpha-arm64-v8a.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-arm64-v8a.apk) |
+| All supported architectures | [mikan-alpha-universal.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-universal.apk) |
+| 32-bit ARM | [mikan-alpha-armeabi-v7a.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-armeabi-v7a.apk) |
+| x86_64 | [mikan-alpha-x86_64.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-x86_64.apk) |
+| 32-bit x86 | [mikan-alpha-x86.apk](https://github.com/getmikan/MikanApp/releases/latest/download/mikan-alpha-x86.apk) |
 
-Dev builds from the `dev` branch: [dev-latest pre-release](https://github.com/getmikan/MikanApp/releases/tag/dev-latest) (debug-signed; Android cannot update a release installation with a debug APK). All releases & changelog: [Releases](https://github.com/getmikan/MikanApp/releases). The app checks for updates itself under **Settings → About & updates**.
+The `alpha` in filenames names the build flavor. Current release builds use
+**`io.github.miroshka000.mikan`**, without an `.alpha` suffix. The former
+`com.nemu.clashfest.clash.alpha` package is a separate installation; export a
+backup before moving between package IDs.
 
-## Updating Mikan
+Check for APK updates in **Settings → About & updates**. Install a compatible
+signed APK over the existing installation to retain subscriptions and settings.
+Updating between Google Play and GitHub also requires matching signing
+certificates or a valid signing-key rotation; a matching package ID alone is
+insufficient. APK checksums are included with each GitHub release.
 
-Official Mikan APKs keep the existing Android application ID
-(`com.nemu.clashfest.clash.alpha` for the standard APK) and signing key so they
-can update signed Mikan installations without removing subscriptions or settings.
-Check for updates in **Settings → About & updates**, or install the release APK
-over your existing Mikan installation.
+Signed beta builds appear as pre-releases. Development builds from `dev` are
+[separate debug-signed artifacts](https://github.com/getmikan/MikanApp/releases/tag/dev-latest)
+and cannot replace a release-signed installation.
 
-<details>
-<summary>Обновление — по-русски</summary>
+## What Mikan does
 
-Официальные APK Mikan сохраняют прежний ID приложения и подпись. Обновитесь через
-«Настройки → О приложении и обновления» или установите release APK поверх текущей
-подписанной версии Mikan. Удалять приложение не нужно: подписки и настройки сохранятся.
+| Area | Features |
+| --- | --- |
+| Connection | One-tap VPN control, a home-screen widget and Quick Settings tile |
+| Subscriptions | Import from a URL, QR code, clipboard or file; refresh feedback and retry actions |
+| Mikan panels | `mikan://` import links, server groups and per-group traffic when supplied by a compatible panel |
+| Servers | Country flags, search, group filters, protocol/transport badges, latency checks and saved ordering |
+| Routing | Rule / Global modes, custom rules, per-app VPN routing and proxy chains |
+| DNS and geodata | Per-profile DNS / hosts editing, GeoIP / GeoSite sources and local database import |
+| Visibility | Live connections and core logs |
+| Appearance | Light, dark and OLED modes, preset and custom colors, text settings, calm or animated backgrounds |
+| Devices | Phone, tablet and Android TV layouts; Companion pairing for remote control |
 
-</details>
+Subscription configuration and user edits are stored separately. Mikan composes
+them when applying a profile and validates the result with the actual core.
+Built-in network hardening and APK update identity/signature checks remain enabled.
 
-## Highlights
+## Current interface
 
-| Area | What you get |
-|------|----------------|
-| **Home** | Active node card, compact subscription actions, circular tab swipe, import from URL / QR / clipboard |
-| **Widget** | Orange 1×1 VPN switch with a short state animation. Uses the selected subscription, saved server and routing settings; asks for Android VPN permission when needed. |
-| **Modes** | Rule / Global quick switch from Home |
-| **Profiles** | Dedicated Profiles tab manager with collapsible proxy groups + per-profile **read-only config viewer** (YAML highlighting, copy / share) |
-| **Proxy chain** | Chain two proxies per profile (first hop → exit) with explicit *save* vs *use-now* and optional YAML preview |
-| **Rules & routing** | Dedicated Routing hub, rule snippets, effective rules, app routing (per‑app VPN policy) |
-| **DNS & network** | Per-profile DNS / hosts editor, **Block IPv6 (AAAA)** toggle, VPN options, security-oriented toggles |
-| **Features** | Safe “every‑day” toggles (unified delay, geodata mode, TCP concurrent) + entry to **Geo Data Source** |
-| **Geo Data Source** | Presets for **geox-url** mirrors (same upstream data, different CDN paths), custom URLs, on-device geo DB import |
-| **Subscriptions** | HTTP(S) / `content:` profiles; **`mierus://`** shares parsed via the same pipeline as other URL imports |
-| **Updates** | In-app manual update check, merged **About & updates**, Home indicator when an update is available |
-| **Quick start** | Quick Settings tile flow with VPN permission handling and one-tap startup |
-| **Android TV** | D-pad-friendly layout with focus navigation and a leanback banner — the same app on the big screen |
-| **Companion / remote** | Pair a device over LAN via QR and drive Mikan remotely — the external controller doubles as a **TV remote** |
-| **Connections** | Live connections view with resilient snapshot decoding and lower polling load |
-| **App** | Dark mode, pure-black (OLED), optional **UI language** (system / EN / RU / ZH), notification & recents options |
-| **Look** | **Lumen** design language — obsidian surfaces, single-accent glow, Manrope + Space Grotesk type; mandarin branding |
-
-## Screenshots
+These captures show the current Mikan interface introduced in the 0.1.3 beta
+series and included in 0.1.4. They use a demonstration subscription.
 
 <table>
   <tr>
-    <td width="50%" align="center"><img src="docs/screenshots/home_on.png" /><br /><sub><b>Home — connected</b> — connect orb, mode, active node, live speed</sub></td>
-    <td width="50%" align="center"><img src="docs/screenshots/home_off.png" /><br /><sub><b>Home — idle</b> — disconnected state, one-tap connect</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/home.png" alt="Mikan home with subscription and server controls" /><br /><b>Home</b></td>
+    <td width="50%" align="center"><img src="docs/screenshots/servers.png" alt="Mikan server picker with country flags and group filters" /><br /><b>Servers</b></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><img src="docs/screenshots/proxy_picker.png" /><br /><sub><b>Nodes</b> — grouped picker with latency, search &amp; protocol chips</sub></td>
-    <td width="50%" align="center"><img src="docs/screenshots/profiles.png" /><br /><sub><b>Profiles</b> — subscriptions, proxy groups, per-profile tools</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/subscriptions.png" alt="Mikan subscriptions" /><br /><b>Subscriptions</b></td>
+    <td width="50%" align="center"><img src="docs/screenshots/themes.png" alt="Mikan appearance and palette settings" /><br /><b>Appearance</b></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><img src="docs/screenshots/rule_editor.png" /><br /><sub><b>Rules</b> — intent-style add / edit, DIRECT · REJECT · route to group</sub></td>
-    <td width="50%" align="center"><img src="docs/screenshots/routing.png" /><br /><sub><b>Routing</b> — subscription + user rules in effective order</sub></td>
-  </tr>
-  <tr>
-    <td width="50%" align="center"><img src="docs/screenshots/add_profile.jpg" /><br /><sub><b>Import</b> — add a subscription / profile from URL, QR or clipboard</sub></td>
-    <td width="50%" align="center"><img src="docs/screenshots/about.jpg" /><br /><sub><b>Settings</b> — about &amp; updates, appearance, language, network</sub></td>
+    <td width="50%" align="center"><img src="docs/screenshots/rules.png" alt="Mikan rules and routing" /><br /><b>Rules</b></td>
+    <td width="50%" align="center"><img src="docs/screenshots/about.png" alt="Mikan about screen with the Citrus core version" /><br /><b>Mikan + Citrus</b></td>
   </tr>
 </table>
 
----
+<details><summary>По-русски</summary>
 
-## Roadmap
+**Mikan** — открытый VPN-клиент для Android с ядром **Citrus**, основанным на
+mihomo. Добавьте совместимую подписку или конфигурацию своего сервера, выберите
+сервер и включите VPN. Приложение само по себе не выдаёт подписку или VPN-сервер.
 
-What we're building next, what's planned, and what's out of scope lives in
-**[ROADMAP.md](ROADMAP.md)** — including community feature requests and why some
-are or aren't a fit. Have an idea? Open an [issue](https://github.com/getmikan/MikanApp/issues).
+В версии 0.1.4 собраны изменения beta-серии: интерфейс Material 3 с анимированным
+мандарином, новая нижняя навигация, палитры, флаги стран, группы серверов и их
+трафик для совместимых панелей Mikan. Доступны маршрутизация по приложениям,
+свои правила, DNS, цепочки прокси, логи и соединения.
 
-**Current focus**
+Для современного телефона выбирайте **arm64-v8a**, универсальный APK содержит
+все архитектуры. Обновляйтесь через «Настройки → О приложении и обновления» или
+совместимым подписанным APK поверх установленного приложения. Для перехода со
+старого ID `com.nemu.clashfest.clash.alpha` сначала экспортируйте резервную копию.
+При переходе между Google Play и GitHub должна совпадать также подпись приложения.
 
-- Stability and regression-free releases on top of the redesigned Home
-- Routing and profile management polish without breaking upstream compatibility
-- Performance and battery optimizations in high-refresh screens
-- Localization quality (EN / RU / ZH first, others incremental)
-- Post-release cleanup of medium-risk technical debt
-
----
-
-## Repository layout
-
-| Module | Role |
-|--------|------|
-| `app/` | Activities, navigation, packaging |
-| `common/` | Shared helpers (imports, naming, ping helpers, …) |
-| `core/` | JNI bridge, native **Mihomo** integration |
-| `design/` | UI, themes, layouts, preference screens |
-| `service/` | VPN service, profiles, rule merge / **Geo** presets |
-
----
+</details>
 
 ## Build
 
-**Requirements**
+Requirements: **JDK 21**, Android SDK **36**, Build Tools **35.0.0**, NDK
+**29.0.14206865**, CMake and a compatible Go **1.26** toolchain. The checked-in
+wrapper uses Gradle **8.11.1** and Android Gradle Plugin **8.10.1**. Direct APKs
+support Android 5.0 / API 21. Google Play bundles require Android 7.0 / API 24
+to support Play automatic protection.
 
-- Android Studio (or compatible IDE)
-- Android SDK + **NDK** as required by the project
-- **JDK 21** (required — the native `:hideapi` step fails silently on older JDKs)
-- Gradle wrapper (included)
+```sh
+git clone --recurse-submodules https://github.com/getmikan/MikanApp.git
+cd MikanApp
+```
 
-**Debug (default `alpha` flavor)**
+Set `sdk.dir` in the ignored `local.properties` file. To match the official
+release package, also set:
 
-```bash
-# Linux / macOS
+```properties
+custom.application.id=io.github.miroshka000.mikan
+remove.suffix=true
+```
+
+Use the checked-in wrapper (`gradlew.bat` on Windows):
+
+```sh
 ./gradlew assembleAlphaDebug
+./gradlew :app:assembleAlphaRelease
+./gradlew :app:bundleAlphaRelease
 ```
 
-```powershell
-# Windows
-.\gradlew.bat assembleAlphaDebug
-```
+Release builds require the private `release.keystore` and ignored
+`signing.properties` containing `keystore.password`, `key.alias` and
+`key.password`. Reuse the existing key for updates. Never commit signing files.
+Release APKs and AABs are optimized and resource-shrunk.
 
-**Signed release**
+Run APK and AAB packaging separately. APK tasks produce the four ABI-specific
+APKs plus a universal APK; bundle tasks disable APK splits and let Google Play
+generate device-specific APKs from the AAB.
 
-Put the private `release.keystore` and `signing.properties` in the repository root.
-The properties file contains `keystore.password`, `key.alias` and `key.password`.
-Both files are ignored by Git. Keep a secure backup and reuse the same key for
-every update; Android checks that the signing certificate matches.
+The core is pinned through `core/src/foss/golang/clash`; its current source is
+[getmikan/Citrus](https://github.com/getmikan/Citrus). Initialize submodules before
+building. Use the Go runtime patches and embedded Root CA preparation from
+`.github/workflows/release.yml`; Windows builders must supply an equivalent
+non-empty CA bundle before compiling the native libraries. Build-time bundled
+geodata is checked against the committed hashes.
 
-```powershell
-.\gradlew.bat :app:assembleAlphaRelease
-```
-
-Release builds require these signing files and never use the debug certificate.
-They enable code optimization and resource shrinking. The version shown in the
-app is `0.1.0`; Android's internal version code continues increasing from the fork.
-
-Tag releases (`v*`) use the `production-release` GitHub Actions environment with
+Tagged GitHub releases use the `production-release` environment with
 `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
-`ANDROID_KEY_PASSWORD` secrets. Private signing files are removed before upload;
-only APKs are published.
+`ANDROID_KEY_PASSWORD`. The workflow verifies package identity, version and
+signing certificate before publishing APKs.
 
----
+## Source layout
 
-## Branding
+| Module | Purpose |
+| --- | --- |
+| `app/` | Activities, imports, updates and packaging |
+| `design/` | Material 3 XML Views, palettes, animations and dialogs |
+| `common/` | Shared models, utilities and Android compatibility |
+| `core/` | JNI bridge and pinned Citrus core |
+| `service/` | VPN service, subscriptions, configuration composition and routing |
+| `clash-companion/` | Companion protocol and remote-control tooling |
 
-- Product name: **Mikan**; repository: **MikanApp**.
-- The painted mandarin comes from the Mikan panel: `design/mikan.webp` (transparent source)
-  and `design/mikan.png` (PNG export). Launcher, notifications, widget and TV banner
-  use the same mark.
-- Android brand assets can be regenerated with Node.js and Sharp:
-  `node packaging/branding/generate.cjs`.
-- Screenshots in `docs/` currently show the upstream appearance.
-
----
-
-## Authors & acknowledgements
+## Branding and contributors
 
 Mikan is developed in [getmikan/MikanApp](https://github.com/getmikan/MikanApp).
+The painted mandarin is shared with the Mikan panel. Source assets live under
+`design/`; Android brand assets are generated with
+`node packaging/branding/generate.cjs`.
 
-Thank you to [Nemu-x](https://github.com/Nemu-x), the author of
-[ClashFest](https://github.com/Nemu-x/ClashFest), on which Mikan is based.
-We also thank the contributors to Clash Meta for Android and mihomo for their work.
-Original copyright and license notices are preserved in `LICENSE` and `NOTICE`.
+Mikan is based on [ClashFest](https://github.com/Nemu-x/ClashFest) by
+[Nemu-x](https://github.com/Nemu-x), which builds on
+[Clash Meta for Android](https://github.com/MetaCubeX/ClashMetaForAndroid).
+Citrus builds on [mihomo](https://github.com/MetaCubeX/mihomo). We thank the
+contributors to these projects and preserve their original copyright notices.
+Geo data presets use [Meta rules dat](https://github.com/MetaCubeX/meta-rules-dat).
 
----
-
-## License
-
-Licensed under the **GNU General Public License v3.0**. See `LICENSE` and `NOTICE`.
-
-**Disclaimer** — Mikan is provided **as-is**, without warranty. Use it responsibly and in
-compliance with local law, provider terms, and upstream licenses.
-
----
-
-## Upstream & related projects
-
-Mikan is a fork of [ClashFest](https://github.com/Nemu-x/ClashFest) and builds on the open Clash / Meta stack. If you use or ship derivatives, keep
-**copyright and license notices** intact. If Mikan is useful for you, consider giving the
-project a star ⭐
-
-| Project | What it is | Link |
-|---------|----------------|------|
-| **Clash Meta for Android** | Upstream Android client this tree forked from | [MetaCubeX/ClashMetaForAndroid](https://github.com/MetaCubeX/ClashMetaForAndroid) |
-| **mihomo** | Clash.Meta core (Go) used under the hood | [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo) |
-| **Meta rules dat** | Community geo / ruleset data releases (our **Geo Data Source** presets mirror these) | [MetaCubeX/meta-rules-dat](https://github.com/MetaCubeX/meta-rules-dat) |
-| **Mieru** | UDP port hopping VPN protocol; **mierus://** subscription links are supported as imports | [enfein/mieru](https://github.com/enfein/mieru) |
-| **SlothClash (Desktop)** | Companion desktop client in the upstream ecosystem (Wails · Go · React) | [Nemu-x/SlothClash](https://github.com/Nemu-x/SlothClash) |
-| **Documentation** | Mihomo / Meta docs (rules, parsers, …) | [wiki.metacubex.one](https://wiki.metacubex.one/) |
+Licensed under **GNU GPL v3.0**. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
