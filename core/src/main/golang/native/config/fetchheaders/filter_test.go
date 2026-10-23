@@ -46,3 +46,46 @@ func TestFilterPersistsOperatorPolicyHeaders(t *testing.T) {
 		t.Fatalf("policy headers not persisted: %#v", got)
 	}
 }
+
+func TestFilterPersistsPrimaryProxyGroupHeader(t *testing.T) {
+	got := Filter(map[string][]string{
+		"X-Brand-Primary-Proxy-Group": {"Proxy"},
+		"X-Brand-PrimaryProxyGroup":   {"Прокси"},
+	})
+
+	want := map[string]string{
+		"x-brand-primary-proxy-group": "Proxy",
+		"x-brand-primaryproxygroup":   "Прокси",
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("primary proxy group header not persisted: %#v", got)
+	}
+}
+
+func TestFilterPersistsProxyGroupLayoutHeader(t *testing.T) {
+	got := Filter(map[string][]string{
+		"X-Brand-Proxy-Group-Layout": {"dropdown"},
+		"X-Brand-ProxyGroupLayout":   {"tabs"},
+	})
+
+	want := map[string]string{
+		"x-brand-proxy-group-layout": "dropdown",
+		"x-brand-proxygrouplayout":   "tabs",
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("proxy group layout header not persisted: %#v", got)
+	}
+}
+
+// The server groups of a mikan panel reach the UI only through the snapshot: the profile's own
+// download is the one request that carries them.
+func TestFilterPersistsMikanGroupsHeader(t *testing.T) {
+	got := Filter(map[string][]string{
+		"X-Mikan-Groups": {"base64:eyJ2IjoxLCJncm91cHMiOltdfQ=="},
+	})
+
+	want := map[string]string{"x-mikan-groups": "base64:eyJ2IjoxLCJncm91cHMiOltdfQ=="}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("server groups header not persisted: %#v", got)
+	}
+}

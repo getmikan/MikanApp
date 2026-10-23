@@ -40,6 +40,9 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
 
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
       # Same toolchain as upstream CMFA: a MetaCubeX build of Go with the two GOROOT patches from
       # .github/patch applied (pidfd disabled on Android — golang/go#69065 SIGSYS under seccomp;
       # futex_time64 removed on 32-bit Linux). Without this the runner's stock Go compiled the core
@@ -59,6 +62,14 @@ jobs:
           done
           go version
 
+      - name: Verify bridge Go module graphs
+        run: |
+          for module in core/src/main/golang core/src/foss/golang; do
+            (cd "$module" && go mod tidy)
+            (cd "$module" && GOOS=android GOARCH=arm64 CGO_ENABLED=1 go list -mod=mod -deps -test -tags foss,with_gvisor,cmfa cfa/native/... >/dev/null)
+          done
+          git diff --exit-code -- core/src/main/golang/go.mod core/src/main/golang/go.sum core/src/foss/golang/go.mod core/src/foss/golang/go.sum
+
       - name: Grant gradlew execute permission
         run: chmod +x gradlew
 
@@ -72,6 +83,10 @@ jobs:
 
       - name: Populate embedded Root CA bundle
         run: bash .github/scripts/populate-ca-bundle.sh
+
+      - name: Test subscription, transport and picker regressions
+        run: |
+          ./gradlew :common:testAlphaDebugUnitTest --tests com.github.kr328.clash.common.util.SubscriptionNameGuesserTest --tests com.github.kr328.clash.common.util.MikanGroupsTest :core:testAlphaDebugUnitTest --tests com.github.kr328.clash.core.model.ChainTypeTest :service:testAlphaDebugUnitTest --tests com.github.kr328.clash.service.util.SubscriptionMaintenanceTest --tests com.github.kr328.clash.service.util.OperatorPolicyHeadersTest --tests com.github.kr328.clash.service.util.XDriveSecretRedactorTest --tests com.github.kr328.clash.service.util.YamlHardenerTest --tests com.github.kr328.clash.service.util.WritePipelineOracleFixtureTest --tests com.github.kr328.clash.service.util.ProfileServerGroupsTest :app:testAlphaDebugUnitTest --tests com.github.kr328.clash.util.AboutVersionsTest :design:testAlphaDebugUnitTest --tests com.github.kr328.clash.design.util.ProxyTransportLabelTest --tests com.github.kr328.clash.design.motion.SheetMotionTest --tests com.github.kr328.clash.design.adapter.ProxyPickerServerGroupFilterTest --tests com.github.kr328.clash.design.view.LabelValueLayoutTest --tests com.github.kr328.clash.design.util.SurfaceInsetsTest --max-workers=2
 
       - name: Build Alpha Debug APK
         run: ./gradlew assembleAlphaDebug

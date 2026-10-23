@@ -25,16 +25,34 @@ val mihomoHead = providers.exec {
 // tag of HEAD, else nearest release tag, else the require line in go.mod) and
 // exposed as BuildConfig.CORE_TAG so Kotlin HTTP probes can advertise the same
 // `mihomo/<version>` the native subscription fetch sends. Empty when unknown.
+// Only upstream mihomo release tags count: Citrus' own v1.0.0-beta.N tags would
+// tell panels the core is older than the mihomo it is built on.
 fun gitDescribe(vararg extra: String): String {
     val result = providers.exec {
         commandLine(
             listOf("git", "-C", file("src/foss/golang/clash").absolutePath, "describe", "--tags") +
-                extra + listOf("--match", "v[0-9]*"),
+                extra + listOf("--match", "v1.[1-9][0-9].*", "--exclude", "*-*"),
         )
         isIgnoreExitValue = true
     }
     return if (result.result.get().exitValue == 0) result.standardOutput.asText.get().trim() else ""
 }
+// The About screen names the core after the submodule: Citrus marks itself with
+// MihomoName = "citrus" in constant/version.go, upstream mihomo has "mihomo".
+// Citrus is shown with its own release tag (v1.0.0-beta.2), the tags that are not
+// upstream mihomo's (nor Citrus' v0.0.0 pre-release tag); mihomoTag above stays
+// what the User-Agent advertises.
+val coreIsCitrus: Boolean = file("src/foss/golang/clash/constant/version.go").let {
+    it.isFile && Regex("""MihomoName\s*=\s*"citrus"""").containsMatchIn(it.readText())
+}
+val citrusTag: String = if (!coreIsCitrus) "" else providers.exec {
+    commandLine(
+        "git", "-C", file("src/foss/golang/clash").absolutePath,
+        "describe", "--tags", "--abbrev=0", "--match", "v*", "--exclude", "v1.[1-9][0-9].*", "--exclude", "v0.*",
+    )
+    isIgnoreExitValue = true
+}.let { if (it.result.get().exitValue == 0) it.standardOutput.asText.get().trim() else "" }
+
 val mihomoTag: String = gitDescribe("--exact-match").ifEmpty { gitDescribe("--abbrev=0") }.ifEmpty {
     val goMod = file("src/main/golang/go.mod")
     if (goMod.isFile) {
@@ -42,6 +60,108 @@ val mihomoTag: String = gitDescribe("--exact-match").ifEmpty { gitDescribe("--ab
     } else {
         ""
     }
+}
+
+// ClashFest patch series for the mihomo submodule (core/patches/mihomo/*.patch).
+//
+// The submodule stays pinned to an upstream tag; the small deltas we need on
+// top of it (see docs/core-patches.md) are applied to the working tree right
+// before every Go build and test, and reverted by `clean`. The task works as a
+// state machine on the tree itself, so a developer's stray edit can never be
+// mistaken for the series:
+//   * every patch reverse-applies cleanly  -> series already applied, no-op;
+//   * tree clean and every patch applies    -> apply the series;
+//   * anything else                          -> fail, naming the offending patch.
+// A core bump that moves the patched lines therefore stops the build here, not
+// after shipping an unpatched libclash.so.
+val mihomoDir = file("src/foss/golang/clash")
+val corePatchDir = file("patches/mihomo")
+
+fun mihomoGit(vararg args: String): Boolean {
+    val result = providers.exec {
+        commandLine(listOf("git", "-C", mihomoDir.absolutePath) + args)
+        isIgnoreExitValue = true
+    }
+    return result.result.get().exitValue == 0
+}
+
+fun corePatches(): List<File> =
+    corePatchDir.listFiles { f -> f.isFile && f.name.endsWith(".patch") }.orEmpty().sortedBy { it.name }
+
+// Paths a patch series touches (both sides of every file header). Only these have to be
+// pristine before applying: CI and the F-Droid recipe legitimately overwrite other tracked
+// files in the submodule (the embedded Root CA bundle), and that must not look like a
+// developer's stray edit.
+fun corePatchPaths(patches: List<File>): Set<String> =
+    patches.flatMap { patch ->
+        Regex("""^(?:---|\+\+\+) [ab]/(\S+)""", RegexOption.MULTILINE).findAll(patch.readText())
+            .map { it.groupValues[1] }.toList()
+    }.toSet()
+
+fun mihomoGitOutput(vararg args: String): String =
+    providers.exec {
+        commandLine(listOf("git", "-C", mihomoDir.absolutePath) + args)
+        isIgnoreExitValue = true
+    }.standardOutput.asText.get().trim()
+
+val applyCorePatches by tasks.registering {
+    description = "Apply the ClashFest patch series to the mihomo submodule working tree"
+    group = "build setup"
+    inputs.dir(corePatchDir)
+    inputs.property("mihomoCommit", mihomoHead)
+    outputs.upToDateWhen { false }
+    doLast {
+        val patches = corePatches()
+        if (patches.isEmpty()) return@doLast
+        val applied = patches.reversed().all { mihomoGit("apply", "--check", "-R", it.absolutePath) }
+        if (applied) {
+            logger.lifecycle("mihomo patches: ${patches.size} already applied")
+            return@doLast
+        }
+        val paths = corePatchPaths(patches).toList()
+        val dirty = mihomoGitOutput(*(listOf("status", "--porcelain", "--") + paths).toTypedArray())
+        if (dirty.isNotEmpty()) {
+            throw GradleException(
+                "mihomo submodule has local modifications in files the ClashFest patch series touches:\n" +
+                    dirty + "\nRun `git -C core/src/foss/golang/clash checkout -- <file>` (or stash your work) and retry.",
+            )
+        }
+        patches.forEach { patch ->
+            if (!mihomoGit("apply", "--check", patch.absolutePath)) {
+                throw GradleException(
+                    "mihomo patch ${patch.name} no longer applies to submodule ${mihomoHead.get().take(12)}. " +
+                        "Rebase the patch (git apply --3way) or drop it if upstream fixed it; see docs/core-patches.md.",
+                )
+            }
+        }
+        patches.forEach { patch ->
+            if (!mihomoGit("apply", patch.absolutePath)) {
+                throw GradleException("mihomo patch ${patch.name} failed to apply")
+            }
+            logger.lifecycle("mihomo patches: applied ${patch.name}")
+        }
+    }
+}
+
+val revertCorePatches by tasks.registering {
+    description = "Remove the ClashFest patch series from the mihomo submodule working tree"
+    group = "build setup"
+    doLast {
+        val patches = corePatches()
+        if (patches.isEmpty()) return@doLast
+        if (patches.reversed().all { mihomoGit("apply", "--check", "-R", it.absolutePath) }) {
+            patches.reversed().forEach { mihomoGit("apply", "-R", it.absolutePath) }
+            logger.lifecycle("mihomo patches: reverted ${patches.size}")
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("externalGolangBuild") }.configureEach {
+    dependsOn(applyCorePatches)
+    inputs.property("coreRevision", mihomoHead)
+}
+tasks.matching { it.name == "clean" }.configureEach {
+    dependsOn(revertCorePatches)
 }
 
 // Run pure-Go unit tests in the snapshot package before any Java/Kotlin
@@ -60,13 +180,26 @@ val goTestNativeSnapshot by tasks.registering(Exec::class) {
     // golang { } block below). config.ParseRawConfig pulls in symbols that
     // only exist under these tags (temporaryUpdateGeneral, etc), so go test
     // fails with "relocation target ... not defined" without them.
-    commandLine("go", "test", "-tags", "foss,with_gvisor,cmfa", "./native/snapshot/...", "./native/useragent/...")
+    commandLine(
+        "go", "test", "-tags", "foss,with_gvisor,cmfa", "-run", "Test",
+        "./native/snapshot/...", "./native/useragent/...", "./native/reality/...", "./native/legacy/...",
+        // Tests shipped inside the patch series run against the patched tree, so a
+        // patch that applied but no longer does what it claims fails here.
+        "github.com/metacubex/mihomo/adapter/outbound",
+        "github.com/metacubex/mihomo/adapter/provider",
+        "github.com/metacubex/mihomo/transport/trusttunnel",
+        "github.com/metacubex/mihomo/transport/xdrive",
+        "github.com/metacubex/mihomo/component/geodata",
+    )
+    dependsOn(applyCorePatches)
 
     inputs.dir("src/main/golang/native/snapshot")
+    inputs.dir("src/main/golang/native/legacy")
     inputs.dir("src/main/golang/native/useragent")
     // Re-run against a bumped core too: the test exercises mihomo itself
     // (module `cfa`, `replace mihomo => ../../foss/golang/clash`).
     inputs.property("mihomoCommit", mihomoHead)
+    inputs.dir(corePatchDir)
     inputs.files("src/main/golang/go.mod", "src/main/golang/go.sum")
     val marker = layout.buildDirectory.file("go-tests/snapshot.passed")
     outputs.file(marker)
@@ -106,6 +239,9 @@ golang {
 android {
     defaultConfig {
         buildConfigField("String", "CORE_TAG", "\"$mihomoTag\"")
+        buildConfigField("String", "CORE_NAME", if (coreIsCitrus) "\"Citrus\"" else "\"Mihomo\"")
+        buildConfigField("String", "CITRUS_TAG", "\"$citrusTag\"")
+        buildConfigField("String", "CORE_REVISION", "\"${mihomoHead.get().take(12)}\"")
     }
 
     productFlavors {

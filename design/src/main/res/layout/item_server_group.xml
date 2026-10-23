@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One server group of a mikan subscription (MikanGroups): its name and what is left, the used
+  share of its own limit, and in the subscription sheet a line about it and "Buy more" once it
+  ran out. The row reads as one item to TalkBack (ServerGroupViews sets its description).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    android:importantForAccessibility="yes"
+    android:orientation="vertical"
+    android:paddingVertical="4dp">
+
+    <!-- The name and what is left share a line while they fit; else what is left goes under the
+         name: the Home card's column is narrow, and neither may be cut short. -->
+    <com.github.kr328.clash.design.view.LabelValueLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAccessibility="noHideDescendants">
+
+        <TextView
+            android:id="@+id/server_group_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawablePadding="8dp"
+            android:fontFamily="@font/manrope_semibold"
+            android:textAppearance="@style/TextAppearance.App.LabelLarge"
+            android:textColor="?attr/colorOnSurface"
+            app:drawableStartCompat="@drawable/ic_server_group_row"
+            app:fontFamily="@font/manrope_semibold"
+            tools:text="Премиум +" />
+
+        <TextView
+            android:id="@+id/server_group_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.App.LabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            tools:text="осталось 11,8 ГиБ" />
+    </com.github.kr328.clash.design.view.LabelValueLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/server_group_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:importantForAccessibility="no"
+        android:max="1000"
+        app:trackCornerRadius="2dp"
+        app:trackThickness="4dp"
+        tools:progress="200" />
+
+    <TextView
+        android:id="@+id/server_group_detail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:importantForAccessibility="no"
+        android:textAppearance="@style/TextAppearance.App.BodySmall"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        tools:text="Израсходовано 3,2 ГиБ из 15 ГиБ"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/server_group_buy"
+        style="@style/AppButton.Text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-12dp"
+        android:minHeight="48dp"
+        android:stateListAnimator="@animator/focus_scale"
+        android:text="@string/server_group_buy"
+        android:visibility="gone"
+        app:icon="@drawable/ic_baseline_add"
+        app:iconGravity="textStart"
+        tools:visibility="visible" />
+</LinearLayout>

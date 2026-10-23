@@ -44,9 +44,10 @@ class ProxyProvidersEditorDesign(
         get() = rootView
 
     init {
-        ViewCompat.setOnApplyWindowInsetsListener(toolbar) { v, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            v.setPadding(v.paddingLeft, top, v.paddingRight, v.paddingBottom)
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
+            val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            v.setPadding(safe.left, 0, safe.right, safe.bottom)
+            toolbar.setPadding(toolbar.paddingLeft, safe.top, toolbar.paddingRight, toolbar.paddingBottom)
             insets
         }
         rootView.post {

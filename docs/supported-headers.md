@@ -21,6 +21,7 @@ fetch. Stable SHA-256 id, non-secret.
 | `x-ver-os` | Android release (e.g. `15`) |
 | `x-device-model` | Manufacturer + model |
 | `x-app-version` | App `versionName` |
+| `x-mikan-features` | `groups`: the mikan panel extensions the app shows (§2.3). A mikan panel sends them only to a request that carries this; others ignore it. |
 | `User-Agent` | Default `mihomo/<coreVersion> ClashFest/<semver>` (e.g. `mihomo/1.19.32 ClashFest/1.1.1`). The core token leads because Marzban / Remnawave pick the clash-meta format from the first token (`^(clash-verge\|clash[-.]?meta\|flclash\|mihomo)`) and would route a `ClashFest/…`-first UA into their legacy clash branch; it also lets panels such as mikan gate protocols on the core version. When the core was not built from a release tag the token is a bare `mihomo`, never a guessed version. Replaced entirely by the per-profile "User-Agent override". The Kotlin HTTP probes (metadata, brand, name guesser) send the same string; they get the core version from `core.BuildConfig.CORE_TAG`, resolved by Gradle the same way CMake does. |
 
 Attached by: native fetch (Go `openUrl`), OkHttp probes in
@@ -116,6 +117,16 @@ All URL fields accept `https://`, `tg://`, `mailto:`, `t.me/`
 | `X-Brand-Hide-Routing` | boolean | Hides the Routing tab from the bottom nav (three tabs). Paired with `Show-Operator-Tab=true`, Operator takes Routing's slot instead. |
 | `X-Brand-Hide-Global-Mode` | boolean | **Policy, no `X-Branding-Enabled` needed:** hides the Home Global mode button and pins Rule mode. |
 | `X-Brand-Lock-Config-Script` | boolean | **Policy, no `X-Branding-Enabled` needed:** disables the per-profile config script editor for that subscription. |
+| `X-Brand-Primary-Proxy-Group` | string | **Policy, no `X-Branding-Enabled` needed:** the proxy group whose current node is shown on Home and in the VPN notification. Alias `X-Brand-PrimaryProxyGroup`. |
+| `X-Brand-Proxy-Group-Layout` | `tabs` \| `dropdown` | **Policy, no `X-Branding-Enabled` needed:** default node-picker layout; the user's own toggle overrides it. Alias `X-Brand-ProxyGroupLayout`. |
+
+### 2.3 mikan panel extensions
+
+Sent by a mikan panel only to a request with `x-mikan-features` (§1); no `X-Branding-Enabled` needed.
+
+| Header | Type | Notes |
+|---|---|---|
+| `X-Mikan-Groups` | `base64:` + JSON `{"v":1,…}` | Server groups with traffic of their own: a line per group on the Home card, "Server groups" in the subscription sheet (used of total, packages, reset date, "Buy more traffic" on `profile-web-page-url`), the group's badge and a filter in the node picker, a notice when a group ran out. Full format in [operator-api/headers.md](operator-api/headers.md#x-mikan-groups). |
 
 ---
 

@@ -1,7 +1,5 @@
 package com.github.kr328.clash
 
-import android.os.Bundle
-import androidx.core.view.WindowCompat
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.common.util.setUUID
 import com.github.kr328.clash.common.util.uuid
@@ -23,11 +21,6 @@ import kotlinx.coroutines.selects.select
 import java.util.UUID
 
 class ProxyProvidersEditorActivity : BaseActivity<ProxyProvidersEditorDesign>() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Let toolbar apply status-bar padding via WindowInsets; do not use system “fits” padding on root.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
 
     override suspend fun main() {
         val uuid: UUID = intent.uuid ?: return finish()

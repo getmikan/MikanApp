@@ -27,6 +27,10 @@ buildscript {
     }
 }
 
+val isAppBundleBuild = gradle.startParameter.taskNames.any {
+    it.substringAfterLast(':').contains("bundle", ignoreCase = true)
+}
+
 subprojects {
     repositories {
         mavenCentral()
@@ -65,12 +69,12 @@ subprojects {
                 else "com.github.kr328.clash.$name"
             }
 
-            minSdk = 21
-            targetSdk = 35
+            minSdk = if (isApp && isAppBundleBuild) 24 else 21
+            targetSdk = 36
 
-            versionName = "0.1.3"
+            versionName = "0.1.4"
             // Keep Android's update counter increasing when resetting the fork's display version.
-            versionCode = 10201012
+            versionCode = 10201025
 
             resValue("string", "release_name", "v$versionName")
             resValue("integer", "release_code", "$versionCode")
@@ -94,9 +98,7 @@ subprojects {
 
         ndkVersion = "29.0.14206865"
 
-        // 36 for the Play flavor's targetSdk (Google Play requires it); the GitHub builds
-        // still target 35.
-        compileSdkVersion(36)
+        compileSdkVersion(defaultConfig.targetSdk!!)
 
         if (isApp) {
             packagingOptions {
@@ -147,8 +149,6 @@ subprojects {
                 // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
                 minSdk = 24
                 targetSdk = 36
-                // Play keeps every uploaded version code, even of a bundle it refused.
-                versionCode = 10201014
                 if (isApp) {
                     applicationId = "io.github.miroshka000.mikan"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
@@ -212,7 +212,8 @@ subprojects {
 
             splits {
                 abi {
-                    isEnable = true
+                    // AGP 8.9+ cannot package an AAB from the APK split resource outputs.
+                    isEnable = !isAppBundleBuild
                     isUniversalApk = true
                     reset()
                     include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")

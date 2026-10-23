@@ -123,6 +123,15 @@ class UiStore(context: Context) {
         defaultValue = true,
     )
 
+    /**
+     * The last proxy chain the user saved (SubscriptionChain JSON), kept while the chain is
+     * turned off so turning it back on needs no re-selection. Empty when never saved.
+     */
+    var proxyChainRemembered: String by store.string(
+        key = "proxy_chain_remembered",
+        defaultValue = "",
+    )
+
     /** Experimental gate for the per-profile DNS & Hosts editor (OFF by default). */
     var dnsHostsEnabled: Boolean by store.boolean(
         key = "dns_hosts_enabled",
@@ -159,6 +168,15 @@ class UiStore(context: Context) {
         key = "proxy_sort",
         defaultValue = ProxySort.Default,
         values = ProxySort.values()
+    )
+
+    /**
+     * Node-picker group layout the user chose: "tabs" / "dropdown", or "" when they never toggled —
+     * then the operator's `X-Brand-Proxy-Group-Layout` (or tabs) applies.
+     */
+    var proxyGroupLayout: String by store.string(
+        key = "proxy_group_layout",
+        defaultValue = ""
     )
 
     var proxyLastGroup: String by store.string(

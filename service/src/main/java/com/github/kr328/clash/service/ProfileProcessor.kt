@@ -12,6 +12,8 @@ import com.github.kr328.clash.service.data.PendingDao
 import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.remote.IFetchObserver
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.service.util.OperatorPolicyHeaders
+import com.github.kr328.clash.service.util.activeProfileAfterDelete
 import com.github.kr328.clash.service.util.FetchHeadersFile
 import com.github.kr328.clash.service.util.GeoUrlSanitizer
 import com.github.kr328.clash.service.util.MihomoConfigDocument
@@ -48,6 +50,13 @@ import java.util.concurrent.TimeUnit
 object ProfileProcessor {
     private val profileLock = Mutex()
     private val processLock = Mutex()
+
+    /** Written by the core (native/legacy) with the count of skipped legacy-protocol nodes. */
+    private const val REMOVED_PROTOCOL_MARKER = "removed-protocol-skipped"
+
+    private fun skippedLegacyNodes(context: Context): Int =
+        File(context.processingDir, REMOVED_PROTOCOL_MARKER).takeIf { it.isFile }
+            ?.readText()?.trim()?.toIntOrNull() ?: 0
 
     suspend fun apply(context: Context, uuid: UUID, callback: IFetchObserver? = null) {
         withContext(Dispatchers.IO) {
@@ -144,6 +153,10 @@ object ProfileProcessor {
                     }
                 }
 
+                // The core leaves how many nodes it skipped (protocol removed from Citrus) next to
+                // config.yaml; the UI reports it once the subscription is saved.
+                ServiceStore(context).setRemovedProtocolSkipped(snapshot.uuid, skippedLegacyNodes(context))
+
                 withContext(NonCancellable) {
                     profileLock.withLock {
                         if (PendingDao().queryByUUID(snapshot.uuid) != snapshot) return@withLock
@@ -194,6 +207,11 @@ object ProfileProcessor {
                             context.pendingDir.resolve(snapshot.uuid.toString())
                                 .deleteRecursively()
 
+                            if (snapshot.type == Profile.Type.Url && snapshot.source.startsWith("https://", true)) {
+                                FetchHeadersFile.readFrom(context.importedDir.resolve(snapshot.uuid.toString()))?.let {
+                                    OperatorPolicyHeaders.applyFromSnapshot(context, snapshot.uuid, it)
+                                }
+                            }
                             context.sendProfileChanged(snapshot.uuid)
                         } else if (snapshot?.type == Profile.Type.File) {
                             val new = Imported(
@@ -349,7 +367,7 @@ object ProfileProcessor {
                     val composed = try {
                         ConfigComposer.compose(
                             fetchedText, refreshedLayer, geoUrls, serviceStore.proxyHardeningMode,
-                            realityCompat = serviceStore.realityMlkemCompat,
+                            realityCompat = serviceStore.realityComposeRewrite,
                             scriptRunner = ConfigScriptPolicy.runnerFor(context, snapshot.uuid, snapshot.name),
                         )
                     } catch (e: ConfigScriptException) {
@@ -358,7 +376,7 @@ object ProfileProcessor {
                         ConfigComposer.compose(
                             fetchedText, refreshedLayer.copy(script = null), geoUrls,
                             serviceStore.proxyHardeningMode,
-                            realityCompat = serviceStore.realityMlkemCompat,
+                            realityCompat = serviceStore.realityComposeRewrite,
                         )
                     }
                     // Runtime engine gate (§config-engine-gate): NEVER apply a config the engine
@@ -415,6 +433,10 @@ object ProfileProcessor {
                     serviceStore.proxyHardeningMode,
                 )
 
+                // The core leaves how many nodes it skipped (protocol removed from Citrus) next to
+                // config.yaml; the UI reports it after the update.
+                serviceStore.setRemovedProtocolSkipped(snapshot.uuid, skippedLegacyNodes(context))
+
                 withContext(NonCancellable) {
                     profileLock.withLock {
                         if (ImportedDao().exists(snapshot.uuid)) {
@@ -422,6 +444,11 @@ object ProfileProcessor {
                             context.processingDir
                                 .copyRecursively(context.importedDir.resolve(snapshot.uuid.toString()))
 
+                            if (snapshot.type == Profile.Type.Url && snapshot.source.startsWith("https://", true)) {
+                                FetchHeadersFile.readFrom(context.importedDir.resolve(snapshot.uuid.toString()))?.let {
+                                    OperatorPolicyHeaders.applyFromSnapshot(context, snapshot.uuid, it)
+                                }
+                            }
                             context.sendProfileChanged(snapshot.uuid)
                         }
                     }
@@ -442,7 +469,16 @@ object ProfileProcessor {
                 pending.deleteRecursively()
                 imported.deleteRecursively()
 
+                val store = ServiceStore(context)
+                val previous = store.activeProfile
+                val next = activeProfileAfterDelete(previous, uuid) {
+                    ImportedDao().queryAllOrderedUUIDs().map { it.uuid }
+                }
+                if (next != previous) {
+                    store.activeProfile = next
+                }
                 context.sendProfileChanged(uuid)
+                if (next != previous) next?.let { context.sendProfileChanged(it) }
             }
         }
     }

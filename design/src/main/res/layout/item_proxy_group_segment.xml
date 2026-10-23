@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:stateListAnimator="@animator/focus_scale"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:background="@drawable/bg_segmented_pill"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
-    android:minHeight="34dp"
+    android:minHeight="40dp"
     android:orientation="horizontal"
-    android:paddingHorizontal="11dp">
+    android:paddingHorizontal="12dp">
 
     <TextView
         android:id="@+id/segment_name"
@@ -32,9 +33,9 @@
         android:background="@drawable/bg_segment_count"
         android:duplicateParentState="true"
         android:gravity="center"
-        android:minWidth="18dp"
-        android:paddingHorizontal="5dp"
-        android:paddingVertical="1dp"
+        android:minWidth="20dp"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="2dp"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="10sp"
         android:textStyle="bold"

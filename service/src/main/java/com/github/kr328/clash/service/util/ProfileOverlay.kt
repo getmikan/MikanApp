@@ -88,7 +88,7 @@ object ProfileOverlay {
             hardeningMode = store.proxyHardeningMode,
             parseSnapshot = { d -> runCatching { Clash.parseProfileSnapshot(d) }.getOrNull() },
             scriptRunner = scriptRunner,
-            realityCompat = store.realityMlkemCompat,
+            realityCompat = store.realityComposeRewrite,
         )
     }
 }

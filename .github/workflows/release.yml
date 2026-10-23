@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GOTOOLCHAIN: local
+      RELEASE_APPLICATION_ID: io.github.miroshka000.mikan
     environment: production-release
 
     steps:
@@ -32,6 +33,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0"
 
       # Same toolchain as upstream CMFA: a MetaCubeX build of Go with the two GOROOT patches from
       # .github/patch applied (pidfd disabled on Android — golang/go#69065 SIGSYS under seccomp;
@@ -84,8 +88,15 @@ jobs:
       - name: Populate embedded Root CA bundle
         run: bash .github/scripts/populate-ca-bundle.sh
 
+      - name: Configure release application ID
+        run: |
+          printf '\ncustom.application.id=%s\nremove.suffix=true\n' "$RELEASE_APPLICATION_ID" >> local.properties
+
       - name: Build Alpha Release APK
-        run: ./gradlew assembleAlphaRelease
+        run: |
+          ./gradlew :design:testAlphaReleaseUnitTest --tests com.github.kr328.clash.design.motion.LiquidNavigationMotionTest --tests com.github.kr328.clash.design.ThemePaletteResourcesTest assembleAlphaRelease
+          grep '<testsuite ' design/build/test-results/testAlphaReleaseUnitTest/TEST-com.github.kr328.clash.design.motion.LiquidNavigationMotionTest.xml
+          grep '<testsuite ' design/build/test-results/testAlphaReleaseUnitTest/TEST-com.github.kr328.clash.design.ThemePaletteResourcesTest.xml
 
       - name: Remove Android signing files
         if: always()
@@ -113,6 +124,37 @@ jobs:
           done
           ls -la release-artifacts
 
+      - name: Verify release APK identity and signature
+        run: |
+          tools="$ANDROID_HOME/build-tools/35.0.0"
+          test -x "$tools/apksigner"
+          echo "Using project Android Build Tools: $tools"
+          expected_name="$(sed -n 's/^[[:space:]]*versionName = "\([^"]*\)".*/\1/p' build.gradle.kts)"
+          expected_code="$(sed -n 's/^[[:space:]]*versionCode = \([0-9]*\).*/\1/p' build.gradle.kts)"
+          expected_cert="33dda52638af204dc81726c0e8e230556904a6d46d90e4938102a09c0b42bd83"
+          test -n "$expected_name" && test -n "$expected_code"
+          for apk in release-artifacts/*.apk; do
+            signing="$("$tools/apksigner" verify --verbose --print-certs "$apk")"
+            if ! grep -Fxq "Signer #1 certificate SHA-256 digest: $expected_cert" <<< "$signing"; then
+              echo "::error::Unexpected release signing certificate: $apk"
+              printf '%s\n' "$signing"
+              exit 1
+            fi
+            badging="$("$tools/aapt" dump badging "$apk")"
+            expected="package: name='$RELEASE_APPLICATION_ID' versionCode='$expected_code' versionName='$expected_name'"
+            if [[ "$badging" != "$expected"* ]]; then
+              echo "::error::Unexpected APK package or version: $apk"
+              printf '%s\n' "$badging" | sed -n '/^package:/p'
+              exit 1
+            fi
+            if grep -q '^application-debuggable' <<< "$badging"; then
+              echo "::error::Refusing to publish a debuggable APK: $apk"
+              exit 1
+            fi
+            "$tools/zipalign" -c -p 4 "$apk"
+            echo "Verified $apk: applicationId=$RELEASE_APPLICATION_ID version=$expected_name build=$expected_code certificate=$expected_cert"
+          done
+
       - name: Remove signing files before publishing
         if: always()
         run: rm -f release.keystore signing.properties
@@ -126,12 +168,27 @@ jobs:
             exit 0
           fi
           version="${GITHUB_REF_NAME#v}"
+          # A tag with a suffix (v0.2.0-beta.1) is a signed test build: published as a
+          # pre-release and never marked latest, so the in-app updater (releases/latest) and
+          # the direct download links skip it. Its notes are docs/releases/<version>.md, or
+          # generated when that file is absent; a stable tag always needs its notes file.
+          flags=()
           notes="docs/releases/${version}.md"
-          if [ ! -s "$notes" ]; then
-            echo "Release notes missing: $notes (English text with a Russian details section required)."
-            exit 1
+          if [[ "${GITHUB_REF_NAME}" == *-* ]]; then
+            flags=(--prerelease --latest=false)
+            if [ -s "$notes" ]; then
+              flags+=(--notes-file "$notes")
+            else
+              flags+=(--generate-notes)
+            fi
+          else
+            if [ ! -s "$notes" ]; then
+              echo "Release notes missing: $notes (English text with a Russian details section required)."
+              exit 1
+            fi
+            flags=(--notes-file "$notes")
           fi
           (cd release-artifacts && sha256sum *.apk > SHA256SUMS.txt)
           gh release create "${GITHUB_REF_NAME}" --verify-tag \
-            --title "Mikan ${version}" --notes-file "$notes" \
+            --title "Mikan ${version}" "${flags[@]}" \
             release-artifacts/*.apk release-artifacts/SHA256SUMS.txt

@@ -28,6 +28,11 @@ var allowlist = map[string]struct{}{
 	"x-brand-renew-url": {}, "x-brand-cabinet-url": {}, "x-brand-user-display-name": {},
 	"x-brand-greeting": {}, "x-brand-hide-routing": {}, "x-brand-hide-global-mode": {},
 	"x-brand-show-operator-tab": {}, "x-brand-lock-config-script": {},
+	"x-brand-primary-proxy-group": {}, "x-brand-primaryproxygroup": {},
+	"x-brand-proxy-group-layout": {}, "x-brand-proxygrouplayout": {},
+	// A mikan panel's server groups (MikanGroups.kt), sent to the app that asks for them with
+	// X-Mikan-Features: groups.
+	"x-mikan-groups": {},
 }
 
 func Filter(header map[string][]string) map[string]string {

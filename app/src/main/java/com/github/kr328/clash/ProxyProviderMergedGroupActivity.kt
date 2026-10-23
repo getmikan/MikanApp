@@ -1,8 +1,6 @@
 package com.github.kr328.clash
 
-import android.os.Bundle
 import android.widget.EditText
-import androidx.core.view.WindowCompat
 import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.design.ProxyProviderMergedGroupDesign
@@ -28,10 +26,6 @@ import java.util.UUID
  * (url-test would often fall back to the fastest provider for the health-check URL).
  */
 class ProxyProviderMergedGroupActivity : BaseActivity<ProxyProviderMergedGroupDesign>() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
 
     override suspend fun main() {
         val uuid: UUID = intent.uuid ?: return finish()

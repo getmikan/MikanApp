@@ -88,11 +88,19 @@ object SubscriptionRequestHeaders {
         }
     }
 
+    /**
+     * The extensions of a mikan panel the app shows, asked for on every subscription request:
+     * the server groups ([MikanGroups]). A panel that does not know the header ignores it, and
+     * a mikan panel sends the extensions only to an app that asks, so other apps get nothing new.
+     */
+    val extensionHeaders: Map<String, String> = mapOf(MikanGroups.FEATURES_HEADER to MikanGroups.FEATURE)
+
     fun build(context: Context, userAgentOverride: String? = null): Map<String, String> {
         val ua = userAgentOverride?.trim().takeUnless { it.isNullOrBlank() } ?: defaultUserAgent(context)
         return LinkedHashMap<String, String>().apply {
             put("User-Agent", ua)
             putAll(SubscriptionDeviceHeaders.headerMap(context))
+            putAll(extensionHeaders)
         }
     }
 
@@ -106,6 +114,7 @@ object SubscriptionRequestHeaders {
     fun toNativeFetchJson(context: Context, userAgentOverride: String? = null): String {
         val map = LinkedHashMap<String, String>().apply {
             putAll(SubscriptionDeviceHeaders.headerMap(context))
+            putAll(extensionHeaders)
             userAgentOverride?.trim()
                 ?.takeIf { it.isNotBlank() }
                 ?.let { put("User-Agent", it) }

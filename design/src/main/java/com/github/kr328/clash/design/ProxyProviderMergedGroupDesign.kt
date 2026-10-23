@@ -34,8 +34,8 @@ class ProxyProviderMergedGroupDesign(
 
     init {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
-            val top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-            v.setPadding(v.paddingLeft, top, v.paddingRight, v.paddingBottom)
+            val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            v.setPadding(safe.left, safe.top, safe.right, safe.bottom)
             insets
         }
         rootView.post { ViewCompat.requestApplyInsets(rootView) }

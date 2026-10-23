@@ -55,8 +55,8 @@ class DnsHostsSettingsDesign(context: Context) : Design<DnsHostsSettingsDesign.R
             context.getString(R.string.dns_hosts_title)
 
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPaddingRelative(bars.left, 0, bars.right, 0)
+            val bars = insets.getInsets((WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()))
+            v.setPadding(bars.left, 0, bars.right, 0)
             scroll.setPadding(scroll.paddingLeft, bars.top, scroll.paddingRight, bars.bottom + 16)
             insets
         }

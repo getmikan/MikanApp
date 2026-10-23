@@ -31,13 +31,14 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mode_rule_row"
         style="@style/AppCard.Filled"
+        android:stateListAnimator="@animator/focus_scale"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:clickable="true"
         android:focusable="true"
         app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="18dp"
+        app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:rippleColor="?attr/colorControlHighlight"
         app:strokeColor="?attr/colorOutlineVariant"
@@ -51,10 +52,11 @@
             android:padding="16dp">
 
             <ImageView
+                android:importantForAccessibility="no"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/bg_m3_status_chip_neutral"
-                android:padding="9dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_baseline_route"
                 app:tint="?attr/colorPrimary"
                 tools:ignore="ContentDescription" />
@@ -98,13 +100,14 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/mode_global_row"
         style="@style/AppCard.Filled"
+        android:stateListAnimator="@animator/focus_scale"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:clickable="true"
         android:focusable="true"
         app:cardBackgroundColor="?attr/colorSurfaceContainer"
-        app:cardCornerRadius="18dp"
+        app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:rippleColor="?attr/colorControlHighlight"
         app:strokeColor="?attr/colorOutlineVariant"
@@ -118,10 +121,11 @@
             android:padding="16dp">
 
             <ImageView
+                android:importantForAccessibility="no"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/bg_m3_status_chip_neutral"
-                android:padding="9dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_baseline_language"
                 app:tint="?attr/colorPrimary"
                 tools:ignore="ContentDescription" />

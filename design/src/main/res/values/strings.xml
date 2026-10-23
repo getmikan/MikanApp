@@ -92,7 +92,7 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="nav_home">Home</string>
     <string name="nav_subscriptions">Profiles</string>
     <string name="nav_proxies">Proxies</string>
-    <string name="nav_routing">Routing</string>
+    <string name="nav_routing">Rules</string>
     <string name="nav_connections">Connections</string>
     <string name="main_activity_title">Activity</string>
     <string name="main_activity_summary">Live connections and diagnostics</string>
@@ -259,6 +259,7 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="profiles_update_engine_warning">Subscription updated, but your local edits could not be applied to the new config this time. Review them.</string>
     <string name="profiles_orphaned_rules_dropped">Disabled %1$d rule(s): their proxy/group no longer exists in the new subscription.</string>
     <string name="profiles_proxy_groups_repaired">Repaired %1$d proxy-group reference(s) that vanished from the new subscription. Emptied groups were blocked, not sent direct.</string>
+    <string name="profiles_removed_protocol_skipped">Skipped servers: %1$d. Their protocol is no longer supported (VMess, SSR, Hysteria v1, TUIC v4, old Shadowsocks ciphers). Ask your provider for VLESS, Trojan or Hysteria 2 links.</string>
 
     <!-- Rule editor: friendly type catalog (RuleTypeCatalog) -->
     <string name="rule_type_domain">Domain</string>
@@ -689,8 +690,12 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="proxy_switch_selector_failed">Could not switch proxy. Existing connections were left untouched.</string>
     <string name="proxy_switch_close_connections_failed">Proxy switched, but active connections could not be closed.</string>
     <string name="network_switch_reaction">React to network changes</string>
-    <string name="reality_mlkem_compat">REALITY: offer ML-KEM (Xray 26.9+)</string>
-    <string name="reality_mlkem_compat_summary">Adds the X25519MLKEM768 key share and the chrome fingerprint to every REALITY node. Required by Xray-core 26.9.8+ servers, but older servers silently drop such handshakes and nodes stop connecting. Keep off unless your operator asks for it.</string>
+    <string name="reality_mlkem_policy">REALITY: ML-KEM key share</string>
+    <string name="reality_mlkem_auto">Auto: offer unless the subscription turns it off (recommended)</string>
+    <string name="reality_mlkem_on">Always offer (Xray 26.9+ only)</string>
+    <string name="reality_mlkem_off">Never offer (old Xray only)</string>
+    <string name="reality_client_version">REALITY: client version</string>
+    <string name="reality_client_version_placeholder">Core default (Xray-style x.y.z)</string>
     <string name="network_switch_reaction_summary">When the device switches networks (Wi-Fi ↔ mobile data), immediately close stale connections and re-test proxy groups so automatic groups pick a working server right away — instead of waiting for the next scheduled health check.</string>
 
     <string name="bypass_private_network">Bypass Private Network</string>
@@ -881,9 +886,9 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="app_language_zh">中文</string>
 
     <string name="home_background">Home background</string>
-    <string name="home_background_material_you">Material</string>
+    <string name="home_background_material_you">Calm</string>
     <string name="home_background_plain">Plain surface</string>
-    <string name="home_background_preview">Mikan</string>
+    <string name="home_background_preview">Animated</string>
 
     <string name="show_traffic">Show Traffic</string>
     <string name="show_traffic_summary">Auto refresh traffic in notification</string>
@@ -1292,6 +1297,8 @@ Password: %4$s</string>
     <string name="subscription_auto_update_off">Auto-update is off</string>
     <string name="subscription_updating">Updating subscription…</string>
     <string name="subscription_update_error">Could not update. Your saved subscription is still available.</string>
+    <string name="profile_updated_fmt">Updated %s</string>
+    <string name="profile_updated_just_now">Updated just now</string>
     <string name="subscription_retry">Retry</string>
     <string name="subscription_activating">Selecting subscription…</string>
     <string name="subscription_finish_setup">Finish setup</string>
@@ -1357,6 +1364,8 @@ Password: %4$s</string>
     <string name="brand_dev_hide_global">Hide Global mode (also applies when branding is off)</string>
     <string name="brand_dev_user_name">User display name</string>
     <string name="brand_dev_greeting">Greeting</string>
+    <string name="brand_dev_primary_group">Primary proxy group (policy)</string>
+    <string name="brand_dev_group_layout">Proxy group layout: tabs / dropdown (policy)</string>
     <string name="brand_dev_url_format">%1$s URL</string>
     <string name="brand_dev_sample_name">Operator %1$d</string>
     <string name="brand_dev_sample_tagline">Fast and secure</string>
@@ -1386,27 +1395,73 @@ Password: %4$s</string>
     <string name="server_ping_method">Test method</string>
     <string name="server_ping_direct">To server (TCP)</string>
     <string name="server_ping_through">Through server (HTTP)</string>
-    <string name="server_ping_explanation">To server measures a direct TCP connection over Wi-Fi or mobile data, outside the VPN. It does not test proxy authentication or website access; UDP-only protocols show N/A. Through server tests a website through each proxy and includes the full route. Connect this subscription first. This choice affects manual tests; automatic server selection still uses the subscription health check.</string>
-    <string name="server_ping_requires_active">To test through a server, connect the VPN using this subscription first.</string>
+    <string name="server_ping_explanation">To server measures a direct TCP connection over Wi-Fi or mobile data, outside the VPN. It does not test proxy authentication or website access; UDP-only protocols show N/A. Through server tests a website through each proxy and includes the full route. Works with the VPN off too. This choice affects manual tests; automatic server selection still uses the subscription health check.</string>
     <string name="server_ping_url_requires_proxy">A custom test website is available in Through server mode.</string>
     <string name="server_ping_unsupported">N/A</string>
+    <string name="chain_state_on">Chain is on</string>
+    <string name="chain_state_off">Chain is off</string>
+    <string name="chain_state_none">No chain yet</string>
+    <string name="chain_route">%1$s → %2$s</string>
+    <string name="chain_kept_route">Kept for later: %1$s → %2$s</string>
+    <string name="chain_switch">Use the proxy chain</string>
+    <string name="chain_save_and_enable">Save and turn on</string>
+    <string name="chain_save_only">Save without connecting</string>
+    <string name="chain_disabled">Chain is off. The servers are kept: turn the switch on to use them again.</string>
+    <string name="chain_none_hint">Pick the entry and exit servers below, then save.</string>
     <string name="chain_description">Phone → entry server → exit server → websites. Choose servers from any saved subscription, even with VPN off.</string>
     <string name="chain_entry_title">1. Entry</string>
     <string name="chain_entry_description">A server your phone can reach.</string>
     <string name="chain_exit_title">2. Exit</string>
     <string name="chain_exit_description">Websites see the IP of this server.</string>
-    <string name="chain_server">Server · type to search</string>
-    <string name="chain_connect">Connect through this chain</string>
-    <string name="chain_remove">Remove saved chain</string>
+    <string name="chain_server">Server</string>
+    <string name="chain_pick_server">Choose a server</string>
+    <string name="chain_search_servers">Search servers</string>
+    <string name="chain_nothing_found">No servers match your search.</string>
+    <string name="chain_selected">Selected</string>
     <string name="chain_no_subscriptions">Add a subscription first. VPN does not need to be running.</string>
     <string name="chain_no_nodes">No saved servers available. Update this subscription first.</string>
-    <string name="chain_not_saved">No chain saved. Saving selects the exit subscription and applies the chain on the next connection, without starting VPN.</string>
     <string name="chain_legacy_saved">This subscription contains an older chain. Remove it here or replace it with the servers selected below.</string>
-    <string name="chain_saved_route">Saved: %1$s → %2$s</string>
     <string name="chain_compatibility">Both servers must be reachable along this route. UDP protocols require UDP support on the entry. The chain uses Global mode.</string>
     <string name="chain_error">Could not apply the chain. Check that both servers still exist, use compatible protocols and are not already part of another chain.</string>
     <string name="chain_pick_both">Choose two different servers.</string>
     <string name="chain_saved_offline">Chain saved. VPN has not been started; your next connection will use the selected exit subscription and this chain.</string>
     <string name="chain_connected">Chain selected. Traffic passes through the entry and exits through the second server.</string>
-    <string name="chain_removed">Chain removed. The subscription uses its normal routing again.</string>
+    <string name="proxy_layout_show_dropdown">Show groups as dropdown lists</string>
+    <string name="proxy_layout_show_tabs">Show groups as tabs</string>
+    <string name="subscription_update_already_running">Already updating this subscription. Please wait.</string>
+    <string name="subscription_update_unavailable">This profile cannot be refreshed from a URL. Open its settings.</string>
+    <string name="subscription_update_none">No URL subscriptions are available to update.</string>
+    <string name="subscription_update_all_result">Updated: %1$d. Failed: %2$d.</string>
+    <string name="subscription_update_expired">Your subscription has expired. Renew it with your provider.</string>
+    <string name="subscription_update_device_limit">Device limit reached. Disconnect another device or contact support.</string>
+    <string name="subscription_update_network_error">Cannot reach the subscription server. Check your connection and try again.</string>
+    <string name="subscription_update_refused">The server refused the update. Check the subscription link.</string>
+    <string name="subscription_update_key_error">The decryption key is missing or incorrect. Import the complete subscription link.</string>
+    <string name="subscription_update_invalid_response">The server returned an invalid response. Your saved subscription is still available.</string>
+    <string name="theme_colors_wallpaper">Colors from your wallpaper are active. Choosing a palette turns them off.</string>
+    <string name="theme_colors_skin">Obsidian controls the colors and font. Choose a palette to leave this style.</string>
+    <string name="theme_colors_brand">Your operator controls the accent. Your palette is saved for unbranded subscriptions.</string>
+    <string name="theme_colors_custom">Your custom accent is active.</string>
+    <string name="theme_colors_preset">Palette: %1$s</string>
+    <string name="theme_custom_accent_saved">Custom accent · %1$s</string>
+    <string name="tun_stack_changed_reconnect">Your provider changed the network stack to %1$s. Reconnect to apply it.</string>
+
+    <!-- Server groups with traffic of their own, from a mikan panel (X-Mikan-Groups). -->
+    <string name="server_groups_title">Server groups</string>
+    <string name="server_groups_more">More groups: %1$d</string>
+    <string name="server_groups_resets">The groups\' traffic starts over on %1$s</string>
+    <string name="server_group_left">%1$s left</string>
+    <string name="server_group_unlimited">Unlimited</string>
+    <string name="server_group_unlimited_used">Unlimited · %1$s</string>
+    <string name="server_group_exhausted">Used up</string>
+    <string name="server_group_used_of">%1$s used of %2$s</string>
+    <string name="server_group_packages_left">%1$s left in packages</string>
+    <string name="server_group_apart">Counted apart from the main traffic</string>
+    <string name="server_group_hidden">Its servers are hidden until the traffic starts over or more is bought</string>
+    <string name="server_group_buy">Buy more traffic</string>
+    <string name="server_group_buy_short">Buy more</string>
+    <string name="server_group_notice_one">The traffic of “%1$s” is used up: its servers are hidden</string>
+    <string name="server_group_notice_many">The traffic of %1$s is used up: their servers are hidden</string>
+    <string name="server_group_quoted">“%1$s”</string>
+    <string name="profile_proxy_filter_server_group">Group: %1$s</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.github.kr328.clash.service.store
 
 import android.content.Context
+import com.github.kr328.clash.core.model.RealityMlkemPolicy
 import com.github.kr328.clash.common.store.Store
 import com.github.kr328.clash.common.store.asStoreProvider
 import android.os.Build
@@ -103,6 +104,8 @@ class ServiceStore(context: Context) {
         defaultValue = ""
     )
 
+    var appliedTunStack by store.string(key = "applied_tun_stack", defaultValue = "")
+
     var tunStackMode by store.string(
         key = "tun_stack_mode",
         // Default "system" (matches upstream CMFA). "auto" follows the subscription's tun.stack;
@@ -187,6 +190,43 @@ class ServiceStore(context: Context) {
         key = "reality_mlkem_compat",
         defaultValue = false
     )
+
+    /**
+     * REALITY X25519MLKEM768 key-share policy, applied inside the core (patch 0002,
+     * docs/core-patches.md). Auto learns per server and is the default; On also keeps
+     * the compose-time rewrite (chrome fingerprint + support-x25519mlkem768) that the
+     * old boolean used to drive.
+     */
+    var realityMlkemPolicy: RealityMlkemPolicy by store.enum(
+        key = "reality_mlkem_policy",
+        defaultValue = RealityMlkemPolicy.Auto,
+        values = RealityMlkemPolicy.values()
+    )
+
+    /**
+     * Xray-style client version the REALITY ClientHello carries (patch 0001). Servers
+     * with `minClientVer` / `maxClientVer` compare against it; blank = core default.
+     */
+    var realityClientVersion by store.string(
+        key = "reality_client_version",
+        defaultValue = ""
+    )
+
+    private var realityPolicyMigrated by store.boolean(
+        key = "reality_mlkem_policy_migrated",
+        defaultValue = false
+    )
+
+    /** The old opt-in boolean becomes the explicit On policy exactly once. */
+    fun migrateRealityPolicy() {
+        if (realityPolicyMigrated) return
+        if (realityMlkemCompat) realityMlkemPolicy = RealityMlkemPolicy.On
+        realityPolicyMigrated = true
+    }
+
+    /** Compose-time REALITY rewrite is now a consequence of the explicit On policy. */
+    val realityComposeRewrite: Boolean
+        get() = realityMlkemPolicy == RealityMlkemPolicy.On
 
     var geoDataSourcePreset: GeoDataSourcePreset by store.enum(
         key = "geo_data_source_preset",
@@ -359,6 +399,26 @@ class ServiceStore(context: Context) {
         val s = rawPrefs.getString("orphaned_rules_$uuid", null) ?: return emptyList()
         rawPrefs.edit().remove("orphaned_rules_$uuid").apply()
         return s.split("\n").filter { it.isNotBlank() }
+    }
+
+    /**
+     * How many nodes of the last update the core skipped because their protocol was removed from
+     * Citrus (VMess, SSR, ...). Set by ProfileProcessor from the core's marker file, consumed by the
+     * UI so the user learns why those servers are missing.
+     */
+    fun setRemovedProtocolSkipped(uuid: UUID, skipped: Int) {
+        if (skipped <= 0) {
+            rawPrefs.edit().remove("removed_protocol_skipped_$uuid").apply()
+        } else {
+            rawPrefs.edit().putInt("removed_protocol_skipped_$uuid", skipped).apply()
+        }
+    }
+
+    /** Reads and clears the skipped-nodes marker (one-shot). Returns 0 when nothing pending. */
+    fun consumeRemovedProtocolSkipped(uuid: UUID): Int {
+        val n = rawPrefs.getInt("removed_protocol_skipped_$uuid", 0)
+        if (n > 0) rawPrefs.edit().remove("removed_protocol_skipped_$uuid").apply()
+        return n
     }
 
     /**

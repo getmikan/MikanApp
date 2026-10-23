@@ -97,10 +97,19 @@ object BrandManifestParser {
         // Policy flags are read before the branding gate on purpose: they restrict the client and
         // apply on header presence alone, unlike every identity field below.
         val lockConfigScript = BrandValidation.parseBoolean(raw(BrandHeaders.LOCK_CONFIG_SCRIPT))
+        val primaryProxyGroup = BrandValidation.cleanString(
+            raw(BrandHeaders.PRIMARY_PROXY_GROUP) ?: raw(BrandHeaders.PRIMARY_PROXY_GROUP_ALIAS),
+            BrandValidation.PROXY_GROUP_NAME_MAX_LENGTH,
+        )
+        val proxyGroupLayout = BrandValidation.parseProxyGroupLayout(
+            raw(BrandHeaders.PROXY_GROUP_LAYOUT) ?: raw(BrandHeaders.PROXY_GROUP_LAYOUT_ALIAS),
+        )
         if (enabled != true) {
             return BrandManifest(
                 hideGlobalMode = hideGlobalMode,
                 lockConfigScript = lockConfigScript,
+                primaryProxyGroup = primaryProxyGroup,
+                proxyGroupLayout = proxyGroupLayout,
                 enabled = enabled,
             )
         }
@@ -137,6 +146,8 @@ object BrandManifestParser {
             hideRouting = BrandValidation.parseBoolean(raw(BrandHeaders.HIDE_ROUTING)),
             hideGlobalMode = hideGlobalMode,
             lockConfigScript = lockConfigScript,
+            primaryProxyGroup = primaryProxyGroup,
+            proxyGroupLayout = proxyGroupLayout,
             showOperatorTab = BrandValidation.parseBoolean(raw(BrandHeaders.SHOW_OPERATOR_TAB)),
             enabled = enabled,
         )
