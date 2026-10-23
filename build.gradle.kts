@@ -149,6 +149,8 @@ subprojects {
                 // Play's automatic protection needs Android 7.0+; the GitHub builds keep 21.
                 minSdk = 24
                 targetSdk = 36
+                versionCode = defaultConfig.versionCode!! + 1
+                resValue("integer", "release_code", "$versionCode")
                 if (isApp) {
                     applicationId = "io.github.miroshka000.mikan"
                     resValue("string", "launch_name", "@string/launch_name_alpha")
