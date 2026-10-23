@@ -63,8 +63,8 @@ class ProxyChainDesign(context: Context) : Design<ProxyChainDesign.Request>(cont
         val horizontalPadding = context.resources.getDimensionPixelSize(R.dimen.main_padding_horizontal)
         val bottomPadding = context.resources.getDimensionPixelSize(R.dimen.main_padding_horizontal)
         ViewCompat.setOnApplyWindowInsetsListener(view) { _, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            scroll.setPaddingRelative(horizontalPadding + bars.left, bars.top, horizontalPadding + bars.right, bars.bottom + bottomPadding)
+            val bars = insets.getInsets((WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()))
+            scroll.setPadding(horizontalPadding + bars.left, bars.top, horizontalPadding + bars.right, bars.bottom + bottomPadding)
             insets
         }
         view.post { ViewCompat.requestApplyInsets(view) }

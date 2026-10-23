@@ -1,8 +1,6 @@
 package com.github.kr328.clash
 
-import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.WindowCompat
 import com.github.kr328.clash.core.Clash
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.design.ProxyChainDesign
@@ -22,10 +20,6 @@ import java.util.UUID
 
 class ProxyChainActivity : BaseActivity<ProxyChainDesign>() {
     private val json = Json { ignoreUnknownKeys = true }
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
     private suspend fun saved(uuid: UUID): SubscriptionChain? = withProfile { readSubscriptionChain(uuid) }
         ?.let { json.decodeFromString(SubscriptionChain.serializer(), it) }
 

@@ -27,6 +27,10 @@ buildscript {
     }
 }
 
+val isAppBundleBuild = gradle.startParameter.taskNames.any {
+    it.substringAfterLast(':').contains("bundle", ignoreCase = true)
+}
+
 subprojects {
     repositories {
         mavenCentral()
@@ -65,12 +69,12 @@ subprojects {
                 else "com.github.kr328.clash.$name"
             }
 
-            minSdk = 21
-            targetSdk = 35
+            minSdk = if (isApp && isAppBundleBuild) 24 else 21
+            targetSdk = 36
 
-            versionName = "0.1.3"
+            versionName = "0.1.4"
             // Keep Android's update counter increasing when resetting the fork's display version.
-            versionCode = 10201023
+            versionCode = 10201025
 
             resValue("string", "release_name", "v$versionName")
             resValue("integer", "release_code", "$versionCode")
@@ -188,7 +192,8 @@ subprojects {
 
             splits {
                 abi {
-                    isEnable = true
+                    // AGP 8.9+ cannot package an AAB from the APK split resource outputs.
+                    isEnable = !isAppBundleBuild
                     isUniversalApk = true
                     reset()
                     include("arm64-v8a", "armeabi-v7a", "x86", "x86_64")

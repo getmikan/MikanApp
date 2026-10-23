@@ -10,7 +10,7 @@ import android.widget.FrameLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import com.github.kr328.clash.common.compat.isAllowForceDarkCompat
-import com.github.kr328.clash.common.compat.isSystemBarsTranslucentCompat
+import com.github.kr328.clash.common.compat.enableEdgeToEdgeCompat
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.ui.Insets
 import com.github.kr328.clash.design.ui.Surface
@@ -76,19 +76,9 @@ class AppBottomSheetDialog(
 
         setCancelable(true)
 
-        // The sheet can't reliably draw behind the nav bar under Material's edge-to-edge
-        // insets, which left a transparent strip over the gesture bar. Paint the nav bar
-        // with the SAME surface colour the sheet uses (bg_bottom_sheet = ?attr/colorSurface),
-        // resolved against the dialog's themed context so it matches in light & dark.
-        val surfaceTv = android.util.TypedValue()
-        getContext().theme.resolveAttribute(
-            com.google.android.material.R.attr.colorSurface, surfaceTv, true,
-        )
-
         window!!.apply {
-            isSystemBarsTranslucentCompat = true
+            enableEdgeToEdgeCompat()
             isAllowForceDarkCompat = false
-            navigationBarColor = surfaceTv.data
         }
 
         // On-device measurement showed the dialog's root `container` applies the bottom
@@ -101,7 +91,8 @@ class AppBottomSheetDialog(
             container.fitsSystemWindows = false
             ViewCompat.setOnApplyWindowInsetsListener(container) { v, insets ->
                 val bars = insets.getInsets(
-                    androidx.core.view.WindowInsetsCompat.Type.systemBars(),
+                    androidx.core.view.WindowInsetsCompat.Type.systemBars() or
+                        androidx.core.view.WindowInsetsCompat.Type.displayCutout(),
                 )
                 v.setPadding(bars.left, bars.top, bars.right, 0)
                 insets
@@ -170,7 +161,7 @@ class FullScreenDialog(
         super.onCreate(savedInstanceState)
 
         window!!.apply {
-            isSystemBarsTranslucentCompat = true
+            enableEdgeToEdgeCompat()
 
             setLayout(
                 WindowManager.LayoutParams.MATCH_PARENT,

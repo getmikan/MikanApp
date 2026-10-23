@@ -3,17 +3,16 @@ package com.github.kr328.clash
 import android.app.ActivityManager
 import android.content.Context
 import android.content.res.Configuration
-import android.os.Build
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.getSystemService
 import com.github.kr328.clash.common.compat.isAllowForceDarkCompat
-import com.github.kr328.clash.common.compat.isLightNavigationBarCompat
-import com.github.kr328.clash.common.compat.isLightStatusBarsCompat
-import com.github.kr328.clash.common.compat.isSystemBarsTranslucentCompat
 import com.github.kr328.clash.core.bridge.ClashException
 import com.github.kr328.clash.design.Design
 import com.github.kr328.clash.design.model.DarkMode
@@ -21,7 +20,6 @@ import com.github.kr328.clash.design.model.HomeBackgroundStyle
 import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.design.ui.DayNight
 import com.github.kr328.clash.design.util.resolveThemedBoolean
-import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.showExceptionToast
 import com.github.kr328.clash.remote.Broadcasts
 import com.github.kr328.clash.remote.Remote
@@ -220,7 +218,7 @@ abstract class BaseActivity<D : Design<*>> : AppCompatActivity(),
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        this.onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
@@ -348,25 +346,19 @@ abstract class BaseActivity<D : Design<*>> : AppCompatActivity(),
     }
 
     /**
-     * Resolve window-level appearance (system-bar colors + light/dark icon hints) from [themed]'s
+     * Resolve edge-to-edge appearance and system-bar icon contrast from [themed]'s
      * theme. For regular activities that's the activity itself (from applyDayNight); MainActivity
      * re-runs this against the design's themed wrapper after every soft recreate so the bars
      * follow the wrapper theme, not the deliberately-virgin Activity theme.
      */
     protected fun applyWindowAppearance(themed: Context) {
         window.isAllowForceDarkCompat = false
-        window.isSystemBarsTranslucentCompat = true
-
-        window.statusBarColor = themed.resolveThemedColor(android.R.attr.statusBarColor)
-        window.navigationBarColor = themed.resolveThemedColor(android.R.attr.navigationBarColor)
-
-        if (Build.VERSION.SDK_INT >= 23) {
-            window.isLightStatusBarsCompat = themed.resolveThemedBoolean(android.R.attr.windowLightStatusBar)
-        }
-
-        if (Build.VERSION.SDK_INT >= 27) {
-            window.isLightNavigationBarCompat = themed.resolveThemedBoolean(android.R.attr.windowLightNavigationBar)
-        }
+        val darkStatusBar = !themed.resolveThemedBoolean(android.R.attr.windowLightStatusBar)
+        val darkNavigationBar = !themed.resolveThemedBoolean(android.R.attr.windowLightNavigationBar)
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT) { darkStatusBar },
+            navigationBarStyle = SystemBarStyle.auto(0xE6FFFFFF.toInt(), 0x801B1B1B.toInt()) { darkNavigationBar },
+        )
     }
 
     enum class Event {

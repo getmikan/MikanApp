@@ -1,7 +1,5 @@
 package com.github.kr328.clash
 
-import android.os.Bundle
-import androidx.core.view.WindowCompat
 import com.github.kr328.clash.design.DnsHostsSettingsDesign
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.service.model.YamlPreview
@@ -29,10 +27,6 @@ class DnsHostsSettingsActivity : BaseActivity<DnsHostsSettingsDesign>() {
     private var uuid: UUID? = null
     private var profileName: String = ""
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-    }
 
     override suspend fun main() {
         val design = DnsHostsSettingsDesign(this)

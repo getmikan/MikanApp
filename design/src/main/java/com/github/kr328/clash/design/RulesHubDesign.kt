@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.kr328.clash.design.ui.ToastDuration
@@ -104,16 +105,16 @@ class RulesHubDesign(context: Context) : Design<RulesHubDesign.Request>(context)
 
     init {
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPaddingRelative(bars.left, bars.top, bars.right, 0)
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            v.setPadding(bars.left, bars.top, bars.right, 0)
             val density = context.resources.displayMetrics.density
             val gap = (8 * density).toInt()
             val barPad = bars.bottom + gap
-            saveBar.setPadding(saveBar.paddingLeft, saveBar.paddingTop, saveBar.paddingRight, barPad)
+            saveBar.setContentPadding(saveBar.contentPaddingLeft, saveBar.contentPaddingTop, saveBar.contentPaddingRight, barPad)
             // Pad the list by the pinned bar's REAL height (measured after it
             // applies its own bottom inset) so it never covers the last rows or
             // a section's expand control. (The old `88` was raw px, ~30dp.)
-            saveBar.post {
+            saveBar.doOnLayout {
                 recycler.setPadding(
                     recycler.paddingLeft,
                     0,
