@@ -117,7 +117,7 @@ class Broadcasts(private val context: Application) {
             )
 
             registered = true
-            clashRunning = StatusClient(context).statusSnapshot().serviceRunning
+            clashRunning = StatusClient(context).statusSnapshot().ready
         } catch (e: Exception) {
             Log.w("Register global receiver: ${LogRedaction.throwableMessage(e)}")
         }

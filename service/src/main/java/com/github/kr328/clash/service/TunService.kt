@@ -48,7 +48,10 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         install(SpeedWidgetModule(self))
 
         try {
+            config.awaitInitialLoad()
             tun.open()
+            StatusProvider.serviceReady = true
+            sendClashStarted()
 
             while (isActive) {
                 val quit = select<Boolean> {
@@ -118,12 +121,6 @@ class TunService : VpnService(), CoroutineScope by CoroutineScope(Dispatchers.De
         StaticNotificationModule.notifyLoadingNotification(this)
 
         runtime.launch()
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        sendClashStarted()
-
-        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {

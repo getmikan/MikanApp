@@ -332,12 +332,12 @@ class ServiceStore(context: Context) {
     }
 
     /**
-     * Per-profile: route this subscription's download through the tunnel (rule matching), which is
-     * the engine default. Some subscriptions are only reachable off-tunnel, so the user can turn it
-     * off to force a direct dial (issue #178). Stored per subscription, like the share-links policy.
+     * Per-profile preferred route for this subscription's download. Direct is the operational
+     * default: it also works while the tunnel is still starting or its current nodes are dead. The
+     * native fetcher retries once through the other route on a route-shaped failure.
      */
     fun subscriptionUpdateViaProxy(uuid: UUID): Boolean =
-        rawPrefs.getBoolean("subscription_update_via_proxy_$uuid", true)
+        rawPrefs.getBoolean("subscription_update_via_proxy_$uuid", false)
 
     fun setSubscriptionUpdateViaProxy(uuid: UUID, value: Boolean) {
         rawPrefs.edit().putBoolean("subscription_update_via_proxy_$uuid", value).apply()

@@ -771,6 +771,11 @@
     <string name="home_background_material_you">Спокойный</string>
     <string name="home_background_plain">Чистая поверхность</string>
     <string name="home_background_preview">Живой</string>
+    <string name="home_subscription_layout">Подписка на главной</string>
+    <string name="home_subscription_layout_summary">В развёрнутом режиме группы и серверы показаны прямо на главной для выбора в одно нажатие.</string>
+    <string name="home_subscription_layout_compact">Компактно</string>
+    <string name="home_subscription_layout_expanded">Развёрнутый список</string>
+    <string name="home_subscription_layout_empty">В этой подписке нет доступных для выбора групп.</string>
 
     <string name="show_traffic">Показывать трафик</string>
     <string name="show_traffic_summary">Автоматически обновлять счётчик трафика в уведомлении</string>

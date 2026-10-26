@@ -71,7 +71,7 @@ internal class MainDashboardFetcher(
 
     private suspend fun MainDesign.fetchSnapshot(): HomeRuntimeSnapshot {
         val status = withContext(Dispatchers.IO) { activity.resolveStatusSnapshot() }
-        val running = status.serviceRunning
+        val running = status.ready
         Remote.broadcasts.clashRunning = running
         if (running && SystemClock.uptimeMillis() < suppressRunningReviveUntil) {
             // User just asked to stop; the service still reports running mid-teardown.
@@ -213,8 +213,8 @@ internal class MainDashboardFetcher(
 
     private suspend fun MainDesign.fetchVisibleGroup(profile: Profile, group: String) {
         val status = withContext(Dispatchers.IO) { activity.resolveStatusSnapshot() }
-        Remote.broadcasts.clashRunning = status.serviceRunning
-        if (!status.serviceRunning || group.isBlank()) {
+        Remote.broadcasts.clashRunning = status.ready
+        if (!status.ready || group.isBlank()) {
             clearProxyDetails()
             return
         }

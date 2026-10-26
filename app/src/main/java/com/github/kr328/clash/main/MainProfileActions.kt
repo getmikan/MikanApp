@@ -164,7 +164,7 @@ internal class MainProfileActions(
     ): Job = scope.launch {
         try {
             val runningNow = withContext(Dispatchers.IO) {
-                activity.resolveStatusSnapshot().serviceRunning
+                activity.resolveStatusSnapshot().ready
             }
             Remote.broadcasts.clashRunning = runningNow
             val activeUuid = withProfile { queryActive()?.uuid }

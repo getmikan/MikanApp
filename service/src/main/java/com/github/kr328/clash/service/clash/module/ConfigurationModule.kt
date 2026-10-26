@@ -20,6 +20,7 @@ import com.github.kr328.clash.service.util.RuntimeSocksAuth
 import com.github.kr328.clash.service.util.ensureBundledGeoAssets
 import com.github.kr328.clash.service.util.importedDir
 import com.github.kr328.clash.service.util.sendProfileLoaded
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withTimeoutOrNull
@@ -46,6 +47,18 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
 
     private val store = ServiceStore(service)
     private val reload = Channel<Unit>(Channel.CONFLATED)
+    private val initialLoad = CompletableDeferred<Unit>()
+
+    suspend fun awaitInitialLoad() {
+        initialLoad.await()
+    }
+
+    private suspend fun failLoad(message: String, cause: Throwable? = null) {
+        if (!initialLoad.isCompleted) {
+            initialLoad.completeExceptionally(cause ?: IllegalStateException(message))
+        }
+        enqueueEvent(LoadException(message))
+    }
 
     /**
      * Local-proxy opt-in for [ProxyHardener], or null when the user hasn't enabled it (the
@@ -118,7 +131,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
                 val subscriptionChain = UserLayerStore(service.importedDir).load(active.uuid).subscriptionChain
                 val currentConfig = java.io.File(profileDir, "config.yaml")
                 if (subscriptionChain == null && currentConfig.isFile && com.github.kr328.clash.service.util.SubscriptionChainComposer.hasChainAliases(currentConfig.readText())) {
-                    return enqueueEvent(LoadException(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable)))
+                    return failLoad(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable))
                 }
 
                 // age: config.yaml is normally already decrypted at fetch time, but a
@@ -163,6 +176,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
 
                     service.sendProfileLoaded(current)
                     loaded = current
+                    initialLoad.complete(Unit)
 
                     Log.d("Active profile loaded")
                 }
@@ -187,7 +201,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
                         }
                     }
                 }.getOrElse {
-                    if (subscriptionChain != null) return enqueueEvent(LoadException(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable)))
+                    if (subscriptionChain != null) return failLoad(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable))
                     Log.w("Overlay refresh failed for ${active.uuid}; loading existing config.yaml", it)
                 }
 
@@ -206,13 +220,13 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
                         throw e // normal stop cancelled the load — not a load failure (O-02)
                     } catch (e: Exception) {
                         if (subscriptionChain != null) {
-                            return enqueueEvent(LoadException(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable)))
+                            return failLoad(service.getString(com.github.kr328.clash.service.R.string.subscription_chain_unavailable), e)
                         }
                         loadFailures++
                         if (loadFailures > 48) {
                             Log.e("Profile load: recovery limit exceeded", e)
                             if (loaded == null) {
-                                return enqueueEvent(LoadException(e.message ?: "Unknown"))
+                                return failLoad(e.message ?: "Unknown", e)
                             }
                             break
                         }
@@ -243,7 +257,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
                                 } else {
                                     Log.e("Failed to load active profile, keeping runtime alive", e)
                                     if (loaded == null) {
-                                        return enqueueEvent(LoadException(e.message ?: "Unknown"))
+                                        return failLoad(e.message ?: "Unknown", e)
                                     }
                                     break
                                 }
@@ -251,7 +265,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
                             else -> {
                                 Log.e("Failed to load active profile, keeping runtime alive", e)
                                 if (loaded == null) {
-                                    return enqueueEvent(LoadException(e.message ?: "Unknown"))
+                                    return failLoad(e.message ?: "Unknown", e)
                                 }
                                 break
                             }
@@ -263,7 +277,7 @@ class ConfigurationModule(service: Service) : Module<ConfigurationModule.LoadExc
             } catch (e: Exception) {
                 Log.e("Failed to load active profile, keeping runtime alive", e)
                 if (loaded == null) {
-                    return enqueueEvent(LoadException(e.message ?: "Unknown"))
+                    return failLoad(e.message ?: "Unknown", e)
                 }
             }
         }

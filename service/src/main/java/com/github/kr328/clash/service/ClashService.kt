@@ -40,6 +40,9 @@ class ClashService : BaseService() {
         install(SpeedWidgetModule(self))
 
         try {
+            config.awaitInitialLoad()
+            StatusProvider.serviceReady = true
+            sendClashStarted()
             while (isActive) {
                 val quit = select<Boolean> {
                     close.onEvent {
@@ -92,11 +95,7 @@ class ClashService : BaseService() {
         runtime.launch()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        sendClashStarted()
-
-        return START_STICKY
-    }
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onBind(intent: Intent?): IBinder {
         return Binder()

@@ -89,6 +89,15 @@ func (e httpStatusError) Error() string {
 	return fmt.Sprintf("server returned HTTP %s", e.status)
 }
 
+// localFetchError marks storage failures. A different network route cannot repair a full disk,
+// a denied directory or a failed local write, so these must never trigger the proxy fallback.
+type localFetchError struct {
+	err error
+}
+
+func (e localFetchError) Error() string { return e.err.Error() }
+func (e localFetchError) Unwrap() error { return e.err }
+
 func openUrl(ctx context.Context, url string, includeSubscriptionHeaders bool, viaProxy bool) (io.ReadCloser, map[string][]string, error) {
 	base := http.Header{"User-Agent": {app.SubscriptionUserAgent()}}
 	hdr := base
@@ -130,6 +139,10 @@ const routeFirstAttemptTimeout = 25 * time.Second
 // hostname (DNS query + TLS SNI) to the local network, which is exactly what routing through the
 // tunnel avoids. So the HTTP side is an allowlist, not a denylist.
 func shouldTryOtherRoute(err error) bool {
+	var local localFetchError
+	if errors.As(err, &local) {
+		return false
+	}
 	var status httpStatusError
 	if errors.As(err, &status) {
 		// We reached the panel and it refused *this request*: 403 is what an IP-whitelisting or
@@ -142,55 +155,38 @@ func shouldTryOtherRoute(err error) bool {
 	return true
 }
 
-// openRoutedUrl opens url on r's preferred route, falling back once to the other one.
-//
-// The fallback covers the two dead ends of a single fixed route: with the tunnel preferred, a
-// subscription that can only be fetched off-tunnel is unreachable — and worse, a profile whose
-// nodes are all dead can't be refreshed, because the refresh goes through the dead nodes. With
-// direct preferred, a DPI-blocked panel is unreachable. Only the *open* is retried; a body that
-// dies mid-transfer is left to the caller's normal error path.
-func openRoutedUrl(ctx context.Context, url string, includeSubscriptionHeaders bool, r route) (io.ReadCloser, map[string][]string, error) {
+type routeAttempt func(context.Context, bool) (map[string][]string, error)
+
+// runRoutedAttempt runs the entire download on the preferred route, then once on the other route.
+// The attempt includes reading the response body: a peer that accepts a request and resets it
+// halfway through must not prevent the fallback from recovering the subscription.
+func runRoutedAttempt(ctx context.Context, r route, attempt routeAttempt) (map[string][]string, error) {
 	if !r.fallback {
-		return openUrl(ctx, url, includeSubscriptionHeaders, r.viaProxy)
+		return attempt(ctx, r.viaProxy)
 	}
 
 	first, cancelFirst := context.WithTimeout(ctx, routeFirstAttemptTimeout)
-	reader, header, err := openUrl(first, url, includeSubscriptionHeaders, r.viaProxy)
-	if err == nil {
-		// The body is read later, by fetch — cancelling now would truncate it. Hand the cancel
-		// to Close instead, which fetch defers.
-		return cancelingReadCloser{ReadCloser: reader, cancel: cancelFirst}, header, nil
-	}
+	header, err := attempt(first, r.viaProxy)
 	cancelFirst()
+	if err == nil {
+		return header, nil
+	}
 
 	if !shouldTryOtherRoute(err) {
-		return nil, nil, err
+		return nil, err
 	}
 
 	alt := r.other()
-	// Logged rather than silent: falling back to direct means the hostname just went out over the
-	// local network, and a user who cares needs to be able to see that it happened.
 	log.Warnln("Subscription fetch via %s failed (%s), retrying %s", r.name(), err.Error(), alt.name())
 
-	reader, header, altErr := openUrl(ctx, url, includeSubscriptionHeaders, alt.viaProxy)
+	header, altErr := attempt(ctx, alt.viaProxy)
 	if altErr != nil {
-		return nil, nil, fmt.Errorf("%s: %w (%s: %v)", r.name(), err, alt.name(), altErr)
+		return nil, fmt.Errorf("%s: %w (%s: %v)", r.name(), err, alt.name(), altErr)
 	}
 
 	log.Infoln("Subscription fetch succeeded via %s", alt.name())
 
-	return reader, header, nil
-}
-
-// cancelingReadCloser releases a request-scoped context once the body is closed.
-type cancelingReadCloser struct {
-	io.ReadCloser
-	cancel context.CancelFunc
-}
-
-func (c cancelingReadCloser) Close() error {
-	defer c.cancel()
-	return c.ReadCloser.Close()
+	return header, nil
 }
 
 func openContent(url string) (io.ReadCloser, error) {
@@ -221,30 +217,41 @@ func fetch(url *U.URL, file string, timeout time.Duration, includeSubscriptionHe
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	var reader io.ReadCloser
-	var header map[string][]string
-	var err error
-
 	switch url.Scheme {
 	case "http", "https":
-		reader, header, err = openRoutedUrl(ctx, url.String(), includeSubscriptionHeaders, r)
+		return runRoutedAttempt(ctx, r, func(attemptCtx context.Context, viaProxy bool) (map[string][]string, error) {
+			reader, header, err := openUrl(attemptCtx, url.String(), includeSubscriptionHeaders, viaProxy)
+			if err != nil {
+				return nil, err
+			}
+			defer reader.Close()
+
+			if err := writeFetchedFile(file, reader); err != nil {
+				return nil, err
+			}
+			return header, nil
+		})
 	case "content":
-		reader, err = openContent(url.String())
+		reader, err := openContent(url.String())
+		if err != nil {
+			return nil, err
+		}
+		defer reader.Close()
+		if err := writeFetchedFile(file, reader); err != nil {
+			return nil, err
+		}
+		return nil, nil
 	default:
-		err = fmt.Errorf("unsupported scheme %s of %s", url.Scheme, url)
+		return nil, fmt.Errorf("unsupported scheme %s of %s", url.Scheme, url)
 	}
+}
 
-	if err != nil {
-		return nil, err
-	}
-
-	defer reader.Close()
-
+func writeFetchedFile(file string, reader io.Reader) error {
 	_ = os.MkdirAll(P.Dir(file), 0700)
 
 	f, err := os.OpenFile(file, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0600)
 	if err != nil {
-		return nil, err
+		return localFetchError{err: err}
 	}
 
 	defer f.Close()
@@ -252,10 +259,14 @@ func fetch(url *U.URL, file string, timeout time.Duration, includeSubscriptionHe
 	_, err = io.Copy(f, reader)
 	if err != nil {
 		_ = os.Remove(file)
-		return nil, err
+		var pathErr *os.PathError
+		if errors.As(err, &pathErr) {
+			return localFetchError{err: err}
+		}
+		return err
 	}
 
-	return header, nil
+	return nil
 }
 
 // FetchHeadersFileName is the per-profile snapshot of the subscription
@@ -293,7 +304,7 @@ func FetchAndValid(
 	path string,
 	url string,
 	force bool,
-	// viaProxy is the user's preferred route (Profile -> Update via proxy, on by default): through
+	// viaProxy is the user's preferred route (Profile -> Update via proxy): through
 	// the tunnel with rule matching, or a direct dial for subscriptions that are only reachable
 	// off-tunnel (issue #178). Either way the other route is tried once if the first fails in a
 	// route-shaped way — see [route].

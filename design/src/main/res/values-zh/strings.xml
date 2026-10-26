@@ -902,6 +902,11 @@
     <string name="home_background_material_you">静态</string>
     <string name="home_background_plain">纯色背景</string>
     <string name="home_background_preview">动态</string>
+    <string name="home_subscription_layout">主页订阅布局</string>
+    <string name="home_subscription_layout_summary">展开列表会直接在主页显示代理组和服务器，可一键选择。</string>
+    <string name="home_subscription_layout_compact">紧凑</string>
+    <string name="home_subscription_layout_expanded">展开列表</string>
+    <string name="home_subscription_layout_empty">此订阅没有可选择的代理组。</string>
     <string name="home_clipboard">剪贴板</string>
     <string name="home_qr">二维码</string>
     <string name="keep_connections_on_old_proxy">切换后保留旧代理上的连接</string>

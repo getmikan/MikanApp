@@ -13,6 +13,7 @@ class StatusProvider : ContentProvider() {
             METHOD_STATUS_SNAPSHOT -> {
                 Bundle().apply {
                     putBoolean(EXTRA_SERVICE_RUNNING, serviceRunning)
+                    putBoolean(EXTRA_SERVICE_READY, serviceReady)
                     putString(EXTRA_CURRENT_PROFILE, currentProfile)
                 }
             }
@@ -67,6 +68,7 @@ class StatusProvider : ContentProvider() {
         const val METHOD_CURRENT_PROFILE = "currentProfile"
         const val METHOD_STATUS_SNAPSHOT = "statusSnapshot"
         const val EXTRA_SERVICE_RUNNING = "serviceRunning"
+        const val EXTRA_SERVICE_READY = "serviceReady"
         const val EXTRA_CURRENT_PROFILE = "name"
 
         private const val CLASH_SERVICE_RUNNING_FILE = "service_running.lock"
@@ -86,10 +88,12 @@ class StatusProvider : ContentProvider() {
                 field = value
                 if (!value) {
                     currentProfile = null
+                    serviceReady = false
                 }
 
                 shouldStartClashOnBoot = value
             }
+        var serviceReady: Boolean = false
         var shouldStartClashOnBoot: Boolean
             get() = Global.application.filesDir.resolve(CLASH_SERVICE_RUNNING_FILE).exists()
             set(value) {

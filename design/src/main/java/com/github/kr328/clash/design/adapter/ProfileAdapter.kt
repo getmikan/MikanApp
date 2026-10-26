@@ -84,6 +84,9 @@ class ProfileAdapter(
     internal val selectedGroupIndex = mutableMapOf<UUID, Int>()
     private val lastReportedVisibleGroup = mutableMapOf<UUID, String>()
     internal var proxySheetDialog: AppBottomSheetDialog? = null
+    internal var inlineProxyList: androidx.recyclerview.widget.RecyclerView? = null
+    internal var inlineProxyProfile: Profile? = null
+    internal var inlineProxyAdapter: ProxyNodeAdapter? = null
     internal val pendingProxySelections = mutableMapOf<String, String>()
     /** Per-node ms when core is off: key `uuid|proxyName`. */
     internal val standalonePingDelays: MutableMap<String, Int> = mutableMapOf()
@@ -137,6 +140,11 @@ class ProfileAdapter(
         val uuid = activeProfileUuid ?: return@Runnable
         val i = profiles.indexOfFirst { it.uuid == uuid }
         if (i >= 0) notifyItemChanged(i)
+        val list = inlineProxyList
+        val profile = inlineProxyProfile
+        if (list != null && profile != null) {
+            renderInlineProxyList(list, profile)
+        }
     }
 
     private fun scheduleActiveCardNotify() {

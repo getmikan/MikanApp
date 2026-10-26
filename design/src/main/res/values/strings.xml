@@ -889,6 +889,11 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="home_background_material_you">Calm</string>
     <string name="home_background_plain">Plain surface</string>
     <string name="home_background_preview">Animated</string>
+    <string name="home_subscription_layout">Subscription layout on Home</string>
+    <string name="home_subscription_layout_summary">The expanded layout shows proxy groups and servers directly on Home for one-tap selection.</string>
+    <string name="home_subscription_layout_compact">Compact</string>
+    <string name="home_subscription_layout_expanded">Expanded list</string>
+    <string name="home_subscription_layout_empty">No selectable proxy groups are available for this subscription.</string>
 
     <string name="show_traffic">Show Traffic</string>
     <string name="show_traffic_summary">Auto refresh traffic in notification</string>

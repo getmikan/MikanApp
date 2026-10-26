@@ -18,6 +18,7 @@ import com.github.kr328.clash.design.branding.BrandThemeApplier
 import com.github.kr328.clash.design.databinding.DesignThemeSettingsBinding
 import com.github.kr328.clash.design.model.DarkMode
 import com.github.kr328.clash.design.model.HomeBackgroundStyle
+import com.github.kr328.clash.design.model.HomeSubscriptionLayout
 import com.github.kr328.clash.design.model.ThemePalette
 import com.github.kr328.clash.design.model.ThemeFontWeight
 import com.github.kr328.clash.design.model.ThemeTextScale
@@ -73,6 +74,7 @@ class ThemeSettingsDesign(
         setupTextScale()
         setupFontWeight()
         setupHomeBackground()
+        setupHomeSubscriptionLayout()
         setupReset()
     }
 
@@ -420,6 +422,24 @@ class ThemeSettingsDesign(
     private val slothActive: Boolean
         get() = uiStore.homeBackgroundStyle == HomeBackgroundStyle.Sloth
 
+    private fun setupHomeSubscriptionLayout() {
+        binding.homeSubscriptionLayoutGroup.check(
+            when (uiStore.homeSubscriptionLayout) {
+                HomeSubscriptionLayout.Compact -> R.id.home_subscription_layout_compact
+                HomeSubscriptionLayout.ExpandedList -> R.id.home_subscription_layout_expanded
+            },
+        )
+        binding.homeSubscriptionLayoutGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+            uiStore.homeSubscriptionLayout = if (checkedId == R.id.home_subscription_layout_expanded) {
+                HomeSubscriptionLayout.ExpandedList
+            } else {
+                HomeSubscriptionLayout.Compact
+            }
+            recreateAll()
+        }
+    }
+
     private fun setupReset() {
         binding.resetThemeButton.setOnClickListener {
             uiStore.darkMode = DarkMode.Auto
@@ -430,6 +450,7 @@ class ThemeSettingsDesign(
             uiStore.themeTextScale = ThemeTextScale.Default
             uiStore.themeFontWeight = ThemeFontWeight.Default
             uiStore.homeBackgroundStyle = HomeBackgroundStyle.Preview
+            uiStore.homeSubscriptionLayout = HomeSubscriptionLayout.Compact
             // Reset also changes day/night (-> Auto), so sync night mode; recreateAll re-themes the
             // rest and re-runs attachBaseContext for the text-scale change.
             syncNightMode()
