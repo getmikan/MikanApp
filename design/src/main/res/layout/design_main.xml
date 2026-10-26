@@ -794,38 +794,6 @@
                             android:importantForAccessibility="no" />
                     </LinearLayout>
 
-                    <FrameLayout
-                        android:id="@+id/main_expanded_proxy_section"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="12dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_proxy_list_surface"
-                        android:visibility="gone">
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/main_expanded_proxy_list"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:clipToPadding="false"
-                            android:nestedScrollingEnabled="true"
-                            android:overScrollMode="never"
-                            android:padding="8dp"
-                            tools:listitem="@layout/adapter_home_proxy_node" />
-
-                        <TextView
-                            android:id="@+id/main_expanded_proxy_empty"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:paddingHorizontal="24dp"
-                            android:paddingVertical="24dp"
-                            android:text="@string/home_subscription_layout_empty"
-                            android:textAppearance="@style/TextAppearance.App.BodyMedium"
-                            android:textColor="?attr/colorOnSurfaceVariant"
-                            android:visibility="gone" />
-                    </FrameLayout>
-
                     <LinearLayout
                         android:id="@+id/main_active_profile_actions"
                         android:layout_width="match_parent"
@@ -943,6 +911,39 @@
                                 android:textAppearance="@style/TextAppearance.App.LabelLarge" />
                         </com.google.android.material.button.MaterialButtonToggleGroup>
                     </LinearLayout>
+
+                    <FrameLayout
+                        android:id="@+id/main_expanded_proxy_section"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="12dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="12dp"
+                        android:background="@drawable/bg_proxy_list_surface"
+                        android:visibility="gone">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/main_expanded_proxy_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:nestedScrollingEnabled="false"
+                            android:overScrollMode="never"
+                            android:padding="8dp"
+                            tools:listitem="@layout/adapter_home_proxy_node" />
+
+                        <TextView
+                            android:id="@+id/main_expanded_proxy_empty"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:paddingHorizontal="24dp"
+                            android:paddingVertical="24dp"
+                            android:text="@string/home_subscription_layout_empty"
+                            android:textAppearance="@style/TextAppearance.App.BodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:visibility="gone" />
+                    </FrameLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             </LinearLayout>

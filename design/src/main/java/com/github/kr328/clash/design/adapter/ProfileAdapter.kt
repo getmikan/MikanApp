@@ -87,6 +87,7 @@ class ProfileAdapter(
     internal var inlineProxyList: androidx.recyclerview.widget.RecyclerView? = null
     internal var inlineProxyProfile: Profile? = null
     internal var inlineProxyAdapter: ProxyNodeAdapter? = null
+    internal val inlineExpandedGroups = HashMap<UUID, MutableSet<String>>()
     internal val pendingProxySelections = mutableMapOf<String, String>()
     /** Per-node ms when core is off: key `uuid|proxyName`. */
     internal val standalonePingDelays: MutableMap<String, Int> = mutableMapOf()
