@@ -146,6 +146,11 @@
             android:exported="false"
             android:label="@string/proxy_chain_title" />
         <activity
+            android:name=".AppRoutingActivity"
+            android:configChanges="uiMode"
+            android:exported="false"
+            android:label="@string/routing_app_proxies" />
+        <activity
             android:name=".LogsActivity"
             android:configChanges="uiMode"
             android:exported="false"

@@ -24,6 +24,8 @@ class RoutingHubActivity : BaseActivity<RoutingHubDesign>() {
                             launch { openRulesHub() }
                         RoutingHubDesign.Request.OpenPerAppRouting ->
                             startActivity(AccessControlActivity::class.intent)
+                        RoutingHubDesign.Request.OpenAppProxies ->
+                            startActivity(AppRoutingActivity::class.intent)
                         RoutingHubDesign.Request.OpenProxyChain ->
                             startActivity(ProxyChainActivity::class.intent)
                         RoutingHubDesign.Request.AddRule -> launch { openRulesHub(addRule = true) }

@@ -61,6 +61,7 @@ object ConfigComposer {
      * @param hardeningMode strict/compat/off — applied to the composed result
      * @param scriptRunner  runs [UserLayer.script]; defaults to a no-op so existing callers and
      *                      the JVM tests keep working without an engine
+     * @param appRouting    the user's own proxies and per-app routes (global, not per profile)
      */
     fun compose(
         fetchedYaml: String,
@@ -69,6 +70,7 @@ object ConfigComposer {
         hardeningMode: ProxyHardeningMode,
         scriptRunner: ConfigScriptRunner = ConfigScriptRunner.Disabled,
         realityCompat: Boolean = false,
+        appRouting: AppRoutingConfig = AppRoutingConfig.Empty,
     ): String {
         var doc = fetchedYaml
 
@@ -108,6 +110,9 @@ object ConfigComposer {
         if (realityCompat) {
             doc = RealityCompat.applyToText(doc) ?: doc
         }
+
+        // Per-app routes after the script and the chain: they must win over every other rule.
+        doc = AppRoutingComposer.compose(doc, appRouting).yaml
 
         // Hardening LAST — on everything that will reach the engine.
         return YamlHardener.hardenYaml(doc, hardeningMode) ?: doc

@@ -22,6 +22,8 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.github.kr328.clash.service.util.ProxyGroupsYamlPreview
 import com.github.kr328.clash.service.util.RuleValidator
+import com.github.kr328.clash.util.internetApps
+import com.github.kr328.clash.util.showAppPicker
 import com.github.kr328.clash.util.showRuleStatePreview
 import com.github.kr328.clash.util.withClash
 import com.github.kr328.clash.util.withProfile
@@ -209,41 +211,13 @@ class RulesHubActivity : BaseActivity<RulesHubDesign>() {
         if (appPickerBusy) return
         appPickerBusy = true
         try {
-            val apps = withContext(Dispatchers.IO) {
-                packageManager.getInstalledPackages(android.content.pm.PackageManager.GET_PERMISSIONS)
-                    .filter { it.packageName != packageName && it.requestedPermissions?.contains(android.Manifest.permission.INTERNET) == true }
-                    .mapNotNull { pkg -> pkg.applicationInfo?.let { info -> pkg.packageName to packageManager.getApplicationLabel(info).toString() } }
-                    .sortedBy { it.second.lowercase() }
-            }
+            val apps = internetApps()
             if (apps.isEmpty()) {
                 design.showStatus(getString(R.string.routing_apps_empty), true)
                 appPickerBusy = false
                 return
             }
-            val labels = apps.map { "${it.second} · ${it.first}" }
-            val field = TextInputLayout(this).apply { hint = getString(R.string.routing_find_app) }
-            val input = android.widget.AutoCompleteTextView(this).apply {
-                threshold = 0
-                minHeight = (48 * resources.displayMetrics.density).toInt()
-                setAdapter(android.widget.ArrayAdapter(this@RulesHubActivity, android.R.layout.simple_dropdown_item_1line, labels))
-            }
-            field.addView(input)
-            val container = LinearLayout(this).apply {
-                val padding = (20 * resources.displayMetrics.density).toInt()
-                setPadding(padding, 0, padding, padding)
-                addView(field)
-            }
-            val dialog = MaterialAlertDialogBuilder(this).setTitle(R.string.routing_pick_app)
-                .setView(container).setNegativeButton(R.string.cancel, null).create()
-            input.setOnItemClickListener { parent, _, position, _ ->
-                val label = parent.getItemAtPosition(position).toString()
-                apps.getOrNull(labels.indexOf(label))?.let { selected(it.first) }
-                dialog.dismiss()
-            }
-            input.setOnFocusChangeListener { _, focused -> if (focused) input.post { input.showDropDown() } }
-            dialog.setOnDismissListener { appPickerBusy = false }
-            dialog.show()
-            input.requestFocus()
+            showAppPicker(apps, onDismiss = { appPickerBusy = false }, onPicked = selected)
         } catch (e: kotlinx.coroutines.CancellationException) {
             appPickerBusy = false
             throw e

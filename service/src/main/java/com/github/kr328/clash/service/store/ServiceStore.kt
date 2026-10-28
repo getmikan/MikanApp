@@ -73,6 +73,25 @@ class ServiceStore(context: Context) {
     )
 
     /**
+     * Kill switch: a VPN session that stops without the user asking keeps the tunnel up with
+     * nothing behind it, so apps cannot fall back to the real network, until the user reconnects
+     * or turns the VPN off (TunService). Read when the session dies, so no restart is needed.
+     */
+    var killSwitch by store.boolean(
+        key = "kill_switch",
+        defaultValue = false
+    )
+
+    /**
+     * Android's own "Always-on VPN" + "Block connections without VPN" for Mikan as the last tunnel
+     * saw it: 1 on, 0 off, -1 not known (no tunnel since install, or Android 9 and older).
+     */
+    var systemVpnLockdown by store.int(
+        key = "system_vpn_lockdown",
+        defaultValue = -1
+    )
+
+    /**
      * User opted into a reachable local SOCKS/HTTP listener on loopback (Settings -> Network ->
      * Local proxy). Off by default: [proxyHardeningMode] Strict disables every local listener so
      * other apps cannot bypass the per-app routing rules via `127.0.0.1`. Turning this on is an
