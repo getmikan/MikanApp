@@ -74,7 +74,7 @@ subprojects {
 
             versionName = "0.1.5"
             // Keep Android's update counter increasing when resetting the fork's display version.
-            versionCode = 10201028
+            versionCode = 10201029
 
             resValue("string", "release_name", "v$versionName")
             resValue("integer", "release_code", "$versionCode")
