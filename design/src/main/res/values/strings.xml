@@ -1546,4 +1546,7 @@ Password: %4$s</string>
     <string name="kill_switch_system_on">On in Android: traffic stays blocked even when Mikan is closed or after a reboot</string>
     <string name="kill_switch_system_off">Off. Turn on “Always-on VPN” and “Block connections without VPN” for Mikan: only Android itself covers Mikan being closed and reboots</string>
     <string name="kill_switch_system_unknown">Turn on “Always-on VPN” and “Block connections without VPN” for Mikan in Android settings: only Android itself covers Mikan being closed and reboots</string>
+    <!-- App updates: beta channel -->
+    <string name="beta_updates">Beta versions</string>
+    <string name="beta_updates_summary">Install pre-release builds too: new features arrive sooner, and bugs may too</string>
 </resources>

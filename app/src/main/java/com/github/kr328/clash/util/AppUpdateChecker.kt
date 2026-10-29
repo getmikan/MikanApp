@@ -1,6 +1,7 @@
 package com.github.kr328.clash.util
 
 import android.app.AlarmManager
+import android.app.DownloadManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -12,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.github.kr328.clash.MainActivity
 import com.github.kr328.clash.UpdateCheckReceiver
 import com.github.kr328.clash.UpdateDownloadActivity
+import com.github.kr328.clash.design.store.UiStore
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import com.github.kr328.clash.design.R as DesignR
@@ -30,6 +32,7 @@ object AppUpdateChecker {
     private const val KEY_LATEST_APK_NAME = "latest_apk_name"
     private const val KEY_LAST_CHECK_AT = "last_check_at"
     private const val KEY_NEXT_PERIODIC_CHECK_AT = "next_periodic_check_at"
+    private const val KEY_PENDING_DOWNLOAD_ID = "pending_download_id"
     private const val PERIODIC_REQUEST_CODE = 1101
     private const val OPEN_APP_REQUEST_CODE = 1102
     private const val ACTION_DOWNLOAD_REQUEST_CODE = 1104
@@ -47,18 +50,18 @@ object AppUpdateChecker {
 
     /** Clears any stored "we notified about tag X" so a future identical version no longer
      *  suppresses notifications, and dismisses the visible banner. Call after install completes
-     *  or when MainActivity confirms current version >= last-notified tag. */
-    fun resetIfUpdated(context: Context, currentVersion: String) {
+     *  or when MainActivity confirms the installed build is at or past the last-notified tag. */
+    fun resetIfUpdated(context: Context) {
         val prefs = context.applicationContext
             .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastTag = prefs.getString(KEY_LAST_NOTIFIED_TAG, null)
         val cachedTag = prefs.getString(KEY_LATEST_TAG, null)
-        if (lastTag != null && GitHubReleaseUpdate.compareVersions(currentVersion, lastTag) >= 0) {
+        if (lastTag != null && !GitHubReleaseUpdate.isNewer(lastTag)) {
             prefs.edit().remove(KEY_LAST_NOTIFIED_TAG).apply()
             dismissUpdateNotification(context)
         }
         // Also clear the in-UI badge cache once we are running the version it was advertising.
-        if (cachedTag != null && GitHubReleaseUpdate.compareVersions(currentVersion, cachedTag) >= 0) {
+        if (cachedTag != null && !GitHubReleaseUpdate.isNewer(cachedTag)) {
             prefs.edit()
                 .remove(KEY_LATEST_TAG)
                 .remove(KEY_LATEST_BODY)
@@ -86,10 +89,9 @@ object AppUpdateChecker {
         val app = context.applicationContext
         val prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val tag = prefs.getString(KEY_LATEST_TAG, null)?.takeIf { it.isNotBlank() } ?: return null
-        val current = runCatching {
-            app.packageManager.getPackageInfo(app.packageName, 0).versionName ?: "0.0.0"
-        }.getOrDefault("0.0.0")
-        if (GitHubReleaseUpdate.compareVersions(tag, current) <= 0) return null
+        if (!GitHubReleaseUpdate.isNewer(tag)) return null
+        // A beta seen while "Beta versions" was on is no offer once it is off.
+        if (GitHubReleaseUpdate.isPrerelease(tag) && !UiStore(app).betaUpdates) return null
         return GitHubReleaseUpdate.Info(
             tagName = tag,
             body = prefs.getString(KEY_LATEST_BODY, "").orEmpty(),
@@ -152,31 +154,57 @@ object AppUpdateChecker {
         )
     }
 
-    suspend fun checkAndNotify(context: Context) {
+    /**
+     * The newest release on the user's channel (betas too with "Beta versions" on) when it is
+     * newer than this build, else null; also null when GitHub cannot be reached.
+     */
+    suspend fun findUpdate(context: Context): GitHubReleaseUpdate.Info? {
         val app = context.applicationContext
         val prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val latest = GitHubReleaseUpdate.fetchLatest() ?: run {
-            // Still record that we tried so opportunistic throttle doesn't keep retrying.
-            prefs.edit().putLong(KEY_LAST_CHECK_AT, System.currentTimeMillis()).apply()
-            return
-        }
+        val latest = GitHubReleaseUpdate.fetchNewest(beta = UiStore(app).betaUpdates)
+        // Recorded even when the fetch failed, so the opportunistic throttle doesn't keep retrying.
         prefs.edit().putLong(KEY_LAST_CHECK_AT, System.currentTimeMillis()).apply()
-        if (latest.tagName.isBlank()) return
-
-        val current = runCatching {
-            app.packageManager.getPackageInfo(app.packageName, 0).versionName ?: "0.0.0"
-        }.getOrDefault("0.0.0")
-        val hasUpdate = GitHubReleaseUpdate.compareVersions(latest.tagName, current) > 0
-        if (!hasUpdate) return
+        if (latest == null || latest.tagName.isBlank() || !GitHubReleaseUpdate.isNewer(latest.tagName)) return null
 
         // Cache full release info every time we see an update (even if Android notification
         // was already shown for this tag). The in-UI badge / dialog rely on this snapshot.
         cacheRelease(app, latest)
+        return latest
+    }
 
+    suspend fun checkAndNotify(context: Context) {
+        val app = context.applicationContext
+        val prefs = app.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val latest = findUpdate(app) ?: return
         if (prefs.getString(KEY_LAST_NOTIFIED_TAG, null) == latest.tagName) return
 
         notifyUpdateAvailable(app, latest)
         prefs.edit().putString(KEY_LAST_NOTIFIED_TAG, latest.tagName).apply()
+    }
+
+    /**
+     * Downloads a newer build at once (app launch, "Beta versions" switched on); the finished
+     * download is checked and handed to the installer (UpdateActionReceiver, MainUpdateController).
+     * @return true when a download started; nothing newer, or one already on its way, is false.
+     */
+    suspend fun downloadUpdate(context: Context): Boolean = checkLock.withLock {
+        val app = context.applicationContext
+        val release = findUpdate(app) ?: return@withLock false
+        if (release.apkUrl.isNullOrBlank() || downloadInFlight(app)) return@withLock false
+        val id = GitHubReleaseUpdate.enqueueApkDownload(app, release)
+        if (id > 0L) dismissUpdateNotification(app)
+        id > 0L
+    }
+
+    /** A download from an earlier check that is still running or waits to be installed. */
+    private fun downloadInFlight(context: Context): Boolean {
+        val id = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getLong(KEY_PENDING_DOWNLOAD_ID, -1L).takeIf { it > 0L } ?: return false
+        val dm = context.getSystemService(DownloadManager::class.java) ?: return false
+        return dm.query(DownloadManager.Query().setFilterById(id))?.use { cursor ->
+            cursor.moveToFirst() &&
+                cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS)) != DownloadManager.STATUS_FAILED
+        } ?: false
     }
 
     /**

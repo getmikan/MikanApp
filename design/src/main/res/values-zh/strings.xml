@@ -1466,4 +1466,7 @@
     <string name="kill_switch_system_on">已在 Android 中开启：即使 Mikan 被关闭或重启后，流量也会被阻止</string>
     <string name="kill_switch_system_off">未开启。请为 Mikan 开启“始终开启的 VPN”和“屏蔽未使用 VPN 的连接”：只有 Android 本身能在 Mikan 被关闭或重启后提供保护</string>
     <string name="kill_switch_system_unknown">在 Android 设置中为 Mikan 开启“始终开启的 VPN”和“屏蔽未使用 VPN 的连接”：只有 Android 本身能在 Mikan 被关闭或重启后提供保护</string>
+    <!-- App updates: beta channel -->
+    <string name="beta_updates">测试版</string>
+    <string name="beta_updates_summary">也安装预发布版本：新功能更早到来，但可能有问题</string>
 </resources>

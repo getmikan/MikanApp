@@ -130,6 +130,12 @@ class UiStore(context: Context) {
         defaultValue = true,
     )
 
+    /** App updates include pre-release builds (betas), not only stable releases. */
+    var betaUpdates: Boolean by store.boolean(
+        key = "beta_updates",
+        defaultValue = false,
+    )
+
     /**
      * The last proxy chain the user saved (SubscriptionChain JSON), kept while the chain is
      * turned off so turning it back on needs no re-selection. Empty when never saved.

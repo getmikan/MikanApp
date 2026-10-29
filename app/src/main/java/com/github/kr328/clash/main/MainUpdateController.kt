@@ -14,6 +14,7 @@ import com.github.kr328.clash.MainActivity
 import com.github.kr328.clash.common.util.intent
 import com.github.kr328.clash.design.MainDesign
 import com.github.kr328.clash.design.R
+import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.util.AboutVersions
 import com.github.kr328.clash.util.AppUpdateChecker
 import com.github.kr328.clash.util.GitHubReleaseUpdate
@@ -73,9 +74,16 @@ internal class MainUpdateController(private val activity: MainActivity) {
 
         // If the installed version is already at/ahead of whatever we last notified about,
         // clear the stale "update available" banner so users don't see it after upgrading.
-        runCatching {
-            val current = activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: "0.0.0"
-            AppUpdateChecker.resetIfUpdated(activity, current)
+        AppUpdateChecker.resetIfUpdated(activity)
+
+        // Once per app start: a newer build (a beta too with "Beta versions" on) downloads right
+        // away and opens the installer when it lands; nothing newer shows nothing at all.
+        if (!launchCheckDone) {
+            launchCheckDone = true
+            activity.launch {
+                val started = runCatching { AppUpdateChecker.downloadUpdate(activity) }.getOrDefault(false)
+                if (started) Toast.makeText(activity, R.string.about_download_started, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -114,15 +122,12 @@ internal class MainUpdateController(private val activity: MainActivity) {
     }
 
     private suspend fun checkForUpdates(design: MainDesign, setStatus: (String?) -> Unit) {
-        val latest = GitHubReleaseUpdate.fetchLatest()
+        val latest = GitHubReleaseUpdate.fetchNewest(beta = UiStore(activity).betaUpdates)
         if (latest == null) {
             setStatus(activity.getString(R.string.about_update_check_failed))
             return
         }
-        val current = withContext(Dispatchers.IO) {
-            activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: "0.0.0"
-        }
-        val hasUpdate = GitHubReleaseUpdate.compareVersions(latest.tagName, current) > 0
+        val hasUpdate = GitHubReleaseUpdate.isNewer(latest.tagName)
         withContext(Dispatchers.Main) {
             if (!hasUpdate) {
                 setStatus(activity.getString(R.string.about_update_latest))
@@ -262,5 +267,10 @@ internal class MainUpdateController(private val activity: MainActivity) {
             }
         }
         dialog.show()
+    }
+
+    private companion object {
+        /** The launch check runs once per process, not again on every MainActivity recreate. */
+        var launchCheckDone = false
     }
 }

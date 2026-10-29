@@ -24,6 +24,7 @@ class AppSettingsDesign(
     enum class Request {
         ReCreateAllActivities,
         ApplyLanguage,
+        CheckUpdates,
     }
 
     private val binding = DesignSettingsCommonBinding
@@ -52,6 +53,18 @@ class AppSettingsDesign(
                 title = R.string.update_before_connect_title,
                 summary = R.string.update_before_connect_summary,
             )
+
+            switch(
+                value = uiStore::betaUpdates,
+                icon = R.drawable.ic_outline_system_update,
+                title = R.string.beta_updates,
+                summary = R.string.beta_updates_summary,
+            ) {
+                // Switched on, look for a beta now rather than at the next launch.
+                listener = OnChangedListener {
+                    if (uiStore.betaUpdates) requests.trySend(Request.CheckUpdates)
+                }
+            }
 
             category(R.string.interface_)
 

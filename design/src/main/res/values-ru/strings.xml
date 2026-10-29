@@ -1537,4 +1537,7 @@
     <string name="kill_switch_system_on">Включено в Android: трафик блокируется, даже если Mikan закрыт или после перезагрузки</string>
     <string name="kill_switch_system_off">Выключено. Включите для Mikan «Постоянная VPN» и «Блокировать соединения без VPN»: только сам Android защитит, если Mikan закрыт или после перезагрузки</string>
     <string name="kill_switch_system_unknown">Включите для Mikan «Постоянная VPN» и «Блокировать соединения без VPN» в настройках Android: только сам Android защитит, если Mikan закрыт или после перезагрузки</string>
+    <!-- App updates: beta channel -->
+    <string name="beta_updates">Бета-версии</string>
+    <string name="beta_updates_summary">Ставить и предварительные версии: новое приходит раньше, но в них бывают ошибки</string>
 </resources>
