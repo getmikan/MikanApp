@@ -282,7 +282,9 @@ internal class ProfileOverlayOps(
                 store.geoDataCustomGeoIp, store.geoDataCustomGeoSite, store.geoDataCustomMmdb, store.geoDataCustomAsn)
             com.github.kr328.clash.service.util.ConfigComposer.compose(base, layer.copy(subscriptionChain = null), urls,
                 store.proxyHardeningMode, scriptRunner = ConfigScriptPolicy.runnerFor(context, uuid, profileName),
-                realityCompat = store.realityComposeRewrite).also { require(Clash.validateProfileBytes(it) == null) }
+                realityCompat = store.realityComposeRewrite,
+                appRouting = com.github.kr328.clash.service.util.AppRoutingStore(context.filesDir).loadConfig(),
+            ).also { require(Clash.validateProfileBytes(it) == null) }
         }
     }
 }

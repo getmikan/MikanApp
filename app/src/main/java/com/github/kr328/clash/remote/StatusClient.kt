@@ -11,7 +11,11 @@ class StatusClient(private val context: Context) {
     data class StatusSnapshot(
         val serviceRunning: Boolean,
         val currentProfile: String?,
-    )
+        val serviceReady: Boolean = false,
+    ) {
+        val ready: Boolean
+            get() = serviceRunning && serviceReady && currentProfile != null
+    }
 
     private val uri: Uri
         get() {
@@ -50,6 +54,7 @@ class StatusClient(private val context: Context) {
             StatusSnapshot(
                 serviceRunning = result?.getBoolean(StatusProvider.EXTRA_SERVICE_RUNNING) ?: false,
                 currentProfile = result?.getString(StatusProvider.EXTRA_CURRENT_PROFILE),
+                serviceReady = result?.getBoolean(StatusProvider.EXTRA_SERVICE_READY) ?: false,
             )
         } catch (e: Exception) {
             Log.w("Query service status: ${LogRedaction.throwableMessage(e)}")

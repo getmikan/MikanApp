@@ -10,6 +10,7 @@ class RoutingHubDesign(context: Context) : Design<RoutingHubDesign.Request>(cont
     enum class Request {
         OpenRules,
         OpenPerAppRouting,
+        OpenAppProxies,
         OpenProxyChain,
         AddRule,
         OpenProviders,
@@ -30,6 +31,7 @@ class RoutingHubDesign(context: Context) : Design<RoutingHubDesign.Request>(cont
         binding.cardRules.setOnClickListener { requests.trySend(Request.OpenRules) }
         binding.cardProxyChain.setOnClickListener { requests.trySend(Request.OpenProxyChain) }
         binding.cardPerApp.setOnClickListener { requests.trySend(Request.OpenPerAppRouting) }
+        binding.cardAppProxies.setOnClickListener { requests.trySend(Request.OpenAppProxies) }
         binding.routingAdd.setOnClickListener { requests.trySend(Request.AddRule) }
         binding.cardProviders.setOnClickListener { requests.trySend(Request.OpenProviders) }
         binding.cardEffective.setOnClickListener { requests.trySend(Request.OpenEffectiveRules) }

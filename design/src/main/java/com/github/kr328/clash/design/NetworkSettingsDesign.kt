@@ -1,9 +1,12 @@
 package com.github.kr328.clash.design
 
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -79,6 +82,26 @@ class NetworkSettingsDesign(
             }
 
             category(R.string.security_options)
+
+            // Read by TunService when a session dies, so it applies without reconnecting.
+            switch(
+                value = srvStore::killSwitch,
+                title = R.string.kill_switch,
+                summary = R.string.kill_switch_summary,
+            )
+
+            // Android's own lockdown is the only guard once Mikan itself is gone (killed, reboot);
+            // an app cannot switch it on, only show it and lead there.
+            clickable(title = R.string.kill_switch_system) {
+                summary = context.getString(
+                    when (srvStore.systemVpnLockdown) {
+                        1 -> R.string.kill_switch_system_on
+                        0 -> R.string.kill_switch_system_off
+                        else -> R.string.kill_switch_system_unknown
+                    },
+                )
+                clicked { openVpnSettings(context) }
+            }
 
             selectableList(
                 value = srvStore::proxyHardeningMode,
@@ -284,6 +307,14 @@ class NetworkSettingsDesign(
             launch {
                 showToast(R.string.options_unavailable, ToastDuration.Indefinite)
             }
+        }
+    }
+
+    private fun openVpnSettings(context: Context) {
+        try {
+            context.startActivity(Intent(Settings.ACTION_VPN_SETTINGS))
+        } catch (_: ActivityNotFoundException) {
+            context.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
         }
     }
 

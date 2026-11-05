@@ -9,6 +9,7 @@ import com.github.kr328.clash.design.model.AppLanguage
 import com.github.kr328.clash.design.model.ServerPingMode
 import com.github.kr328.clash.design.model.DarkMode
 import com.github.kr328.clash.design.model.HomeBackgroundStyle
+import com.github.kr328.clash.design.model.HomeSubscriptionLayout
 import com.github.kr328.clash.design.model.ProfileSortMode
 import com.github.kr328.clash.design.model.ThemeFontWeight
 import com.github.kr328.clash.design.model.ThemePalette
@@ -101,6 +102,12 @@ class UiStore(context: Context) {
         values = HomeBackgroundStyle.values(),
     )
 
+    var homeSubscriptionLayout: HomeSubscriptionLayout by store.enum(
+        key = "home_subscription_layout",
+        defaultValue = HomeSubscriptionLayout.Compact,
+        values = HomeSubscriptionLayout.values(),
+    )
+
     var hideAppIcon: Boolean by store.boolean(
         key = "hide_app_icon",
         defaultValue = false
@@ -121,6 +128,12 @@ class UiStore(context: Context) {
     var updateProfileBeforeConnect: Boolean by store.boolean(
         key = "update_profile_before_connect",
         defaultValue = true,
+    )
+
+    /** App updates include pre-release builds (betas), not only stable releases. */
+    var betaUpdates: Boolean by store.boolean(
+        key = "beta_updates",
+        defaultValue = false,
     )
 
     /**

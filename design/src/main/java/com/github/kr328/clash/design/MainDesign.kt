@@ -12,6 +12,7 @@ import com.github.kr328.clash.core.model.ProxyGroup
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.core.util.trafficTotal
 import com.github.kr328.clash.design.adapter.ProfileAdapter
+import com.github.kr328.clash.design.adapter.renderInlineProxyList
 import com.github.kr328.clash.design.main.MainPager
 import com.github.kr328.clash.design.main.PowerVisuals
 import com.github.kr328.clash.design.main.SubscriptionDetailsSheet
@@ -32,6 +33,7 @@ import com.github.kr328.clash.design.databinding.DesignMainBinding
 import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
 import com.github.kr328.clash.design.model.DarkMode
 import com.github.kr328.clash.design.model.HomeBackgroundStyle
+import com.github.kr328.clash.design.model.HomeSubscriptionLayout
 import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.design.ui.ToastDuration
 import com.github.kr328.clash.design.util.applyLinearAdapter
@@ -470,6 +472,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
                 patchDataSet(this::profiles, homeProfiles, id = { it.uuid })
             }
             profileAdapter.setExpandedUuids(expandedProfileUuids.toSet())
+            renderHomeSubscriptionLayout()
 
             tabProfilesAll = profiles
             tabProfileAdapter.apply {
@@ -498,6 +501,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
             profileAdapter.serverGroupsByProfile = groups
             tabProfileAdapter.serverGroupsByProfile = groups
             renderActiveProfileCard(activeProfileForQuickActions)
+            renderHomeSubscriptionLayout()
             refreshSubscriptionDetails()
         }
     }
@@ -530,6 +534,26 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         }
         binding.mainActiveNodeValue.text = cleanName ?: context.getString(R.string.main_node_choose)
         binding.mainActiveNodeRow.setOnClickListener { p?.let { openNodePicker(it) } }
+    }
+
+    private fun renderHomeSubscriptionLayout() {
+        val expanded = uiStore.homeSubscriptionLayout == HomeSubscriptionLayout.ExpandedList
+        binding.mainActiveNodeRow.visibility = if (expanded) View.GONE else View.VISIBLE
+        binding.mainExpandedProxySection.visibility = if (expanded) View.VISIBLE else View.GONE
+
+        if (!expanded) {
+            profileAdapter.renderInlineProxyList(binding.mainExpandedProxyList, null)
+            return
+        }
+
+        val profile = activeProfileForQuickActions?.takeIf { it.imported }
+        if (profile != null) {
+            expandedProfileUuids.add(profile.uuid)
+            profileAdapter.setExpandedUuids(expandedProfileUuids.toSet())
+        }
+        val itemCount = profileAdapter.renderInlineProxyList(binding.mainExpandedProxyList, profile)
+        binding.mainExpandedProxyList.visibility = if (itemCount > 0) View.VISIBLE else View.GONE
+        binding.mainExpandedProxyEmpty.visibility = if (itemCount > 0) View.GONE else View.VISIBLE
     }
 
     private fun resolveSupportUrl(): String? =
@@ -574,6 +598,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
                 // offline preview hides exactly the groups the engine hides.
                 uiStore.proxyExcludeNotSelectable,
             )
+            renderHomeSubscriptionLayout()
             refreshSubscriptionDetails()
         }
     }
@@ -582,6 +607,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             profileAdapter.setProxyDetails(details)
             tabProfileAdapter.setProxyDetails(details)
+            renderHomeSubscriptionLayout()
             refreshSubscriptionDetails()
         }
     }
@@ -611,12 +637,14 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             profileAdapter.clearProxyDetails()
             tabProfileAdapter.clearProxyDetails()
+            renderHomeSubscriptionLayout()
         }
     }
 
     suspend fun markProxySelectionPending(profile: Profile, group: String, proxy: String) {
         withContext(Dispatchers.Main) {
             profileAdapter.setPendingProxySelection(profile.uuid, group, proxy)
+            renderHomeSubscriptionLayout()
         }
     }
 
@@ -624,6 +652,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             profileAdapter.clearStandalonePingDelays(uuid)
             tabProfileAdapter.clearStandalonePingDelays(uuid)
+            renderHomeSubscriptionLayout()
         }
     }
 
@@ -631,6 +660,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             profileAdapter.setStandalonePingResults(uuid, results)
             tabProfileAdapter.setStandalonePingResults(uuid, results)
+            renderHomeSubscriptionLayout()
         }
     }
 
@@ -900,6 +930,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         binding.profilesTabRefresh.setOnChildScrollUpCallback { _, _ -> binding.profilesTabList.canScrollVertically(-1) }
         binding.profilesTabRefresh.setColorSchemeColors(context.resolveThemedColor(MaterialR.attr.colorPrimary))
         binding.profilesTabRefresh.setOnRefreshListener { requestAllSubscriptionUpdates() }
+        renderHomeSubscriptionLayout()
 
         powerVisuals.install()
         binding.mainPowerCard.setOnClickListener {

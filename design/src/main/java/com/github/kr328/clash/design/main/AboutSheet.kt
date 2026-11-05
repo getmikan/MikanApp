@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.View
+import com.github.kr328.clash.design.BuildConfig
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.branding.BrandHolder
 import com.github.kr328.clash.design.databinding.DesignAboutBinding
@@ -94,7 +95,7 @@ internal fun showAboutSheet(
         }
     }
 
-    if (onCheckUpdates != null) {
+    if (onCheckUpdates != null && BuildConfig.SELF_UPDATE) {
         // Status line shows the current/known update state up front (so "About & updates"
         // reflects a cached update without re-checking); the button is the action.
         val statusLine = binding.aboutUpdateStatus

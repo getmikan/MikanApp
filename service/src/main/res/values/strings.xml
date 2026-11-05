@@ -73,4 +73,9 @@
     <string name="yaml_edit_proxy_not_found">Proxy was not found.</string>
     <string name="yaml_edit_no_chains">No saved proxy chains.</string>
     <string name="subscription_chain_unavailable">The saved proxy chain is unavailable. Check or reselect its entry and exit servers before connecting.</string>
+    <!-- Kill switch: the session died, traffic is held -->
+    <string name="kill_switch_blocked_title">Kill switch: internet blocked</string>
+    <string name="kill_switch_blocked_text">The VPN stopped. Reconnect, or turn the VPN off to use the internet without it.</string>
+    <string name="kill_switch_blocked_reason">The VPN stopped: %1$s. Reconnect, or turn the VPN off to use the internet without it.</string>
+    <string name="kill_switch_reconnect">Reconnect</string>
 </resources>

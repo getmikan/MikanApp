@@ -250,8 +250,8 @@ object Clash {
     }
 
     /**
-     * @param viaProxy route the download through the tunnel with rule matching (the engine default).
-     *        False forces a direct dial, for subscriptions that are only reachable off-tunnel.
+     * @param viaProxy prefer downloading through the tunnel with rule matching. False prefers a
+     *        direct dial; the native fetcher retries once through the other route when appropriate.
      */
     fun fetchAndValid(
         path: File,

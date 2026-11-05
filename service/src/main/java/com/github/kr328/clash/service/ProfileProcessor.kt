@@ -364,11 +364,13 @@ object ProfileProcessor {
                                 if (dir.name == snapshot.uuid.toString()) Clash.parseProfileSnapshot(context.processingDir) else Clash.parseProfileSnapshot(dir)
                             })
                         } ?: capturedLayer
+                    val appRouting = com.github.kr328.clash.service.util.AppRoutingStore(context.filesDir).loadConfig()
                     val composed = try {
                         ConfigComposer.compose(
                             fetchedText, refreshedLayer, geoUrls, serviceStore.proxyHardeningMode,
                             realityCompat = serviceStore.realityComposeRewrite,
                             scriptRunner = ConfigScriptPolicy.runnerFor(context, snapshot.uuid, snapshot.name),
+                            appRouting = appRouting,
                         )
                     } catch (e: ConfigScriptException) {
                         Log.w("User script failed (${e.error.code}) for ${snapshot.uuid}; updating without it: ${e.message}")
@@ -377,6 +379,7 @@ object ProfileProcessor {
                             fetchedText, refreshedLayer.copy(script = null), geoUrls,
                             serviceStore.proxyHardeningMode,
                             realityCompat = serviceStore.realityComposeRewrite,
+                            appRouting = appRouting,
                         )
                     }
                     // Runtime engine gate (§config-engine-gate): NEVER apply a config the engine

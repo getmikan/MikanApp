@@ -6,10 +6,14 @@ import androidx.core.os.LocaleListCompat
 import com.github.kr328.clash.common.constants.Components
 import com.github.kr328.clash.common.util.componentName
 import com.github.kr328.clash.design.AppSettingsDesign
+import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.model.Behavior
+import com.github.kr328.clash.design.ui.ToastDuration
 import com.github.kr328.clash.service.store.ServiceStore
+import com.github.kr328.clash.util.AppUpdateChecker
 import com.github.kr328.clash.util.ApplicationObserver
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
 
 class AppSettingsActivity : BaseActivity<AppSettingsDesign>(), Behavior {
@@ -35,17 +39,25 @@ class AppSettingsActivity : BaseActivity<AppSettingsDesign>(), Behavior {
                     }
                 }
                 design.requests.onReceive { request ->
-                    if (request == AppSettingsDesign.Request.ApplyLanguage) {
-                        val tag = uiStore.appLanguage.tag
-                        val locales = if (tag.isEmpty()) {
-                            LocaleListCompat.getEmptyLocaleList()
-                        } else {
-                            LocaleListCompat.forLanguageTags(tag)
+                    if (request == AppSettingsDesign.Request.CheckUpdates) {
+                        launch {
+                            val started = runCatching { AppUpdateChecker.downloadUpdate(this@AppSettingsActivity) }
+                                .getOrDefault(false)
+                            if (started) design.showToast(R.string.about_download_started, ToastDuration.Short)
                         }
-                        AppCompatDelegate.setApplicationLocales(locales)
-                    }
-                    ApplicationObserver.createdActivities.forEach {
-                        it.recreate()
+                    } else {
+                        if (request == AppSettingsDesign.Request.ApplyLanguage) {
+                            val tag = uiStore.appLanguage.tag
+                            val locales = if (tag.isEmpty()) {
+                                LocaleListCompat.getEmptyLocaleList()
+                            } else {
+                                LocaleListCompat.forLanguageTags(tag)
+                            }
+                            AppCompatDelegate.setApplicationLocales(locales)
+                        }
+                        ApplicationObserver.createdActivities.forEach {
+                            it.recreate()
+                        }
                     }
                 }
             }

@@ -46,7 +46,7 @@ internal class MainTunnelModeController(private val activity: MainActivity) {
             pendingTunnelMode = normalized
             setMode(normalized)
 
-            val running = clashRunning || withContext(Dispatchers.IO) { activity.resolveStatusSnapshot().serviceRunning }
+            val running = clashRunning || withContext(Dispatchers.IO) { activity.resolveStatusSnapshot().ready }
             if (running) {
                 val error = runCatching {
                     withClash {
@@ -114,7 +114,7 @@ internal class MainTunnelModeController(private val activity: MainActivity) {
     ) {
         repeat(attempts) { index ->
             val done = runCatching {
-                val running = activity.resolveStatusSnapshot().serviceRunning
+                val running = activity.resolveStatusSnapshot().ready
                 if (!running) return@runCatching true
 
                 val mode = withClash { queryTunnelState().mode }

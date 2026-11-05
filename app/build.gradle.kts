@@ -50,6 +50,15 @@ android {
         unitTests.isReturnDefaultValues = true
     }
 
+    defaultConfig {
+        // The tag a release APK is built from (release.yml runs on tags), so the updater can
+        // tell 0.1.5-beta.3 from 0.1.5: betas keep the version name. Empty in local builds.
+        val releaseTag = System.getenv("GITHUB_REF_NAME").orEmpty()
+            .takeIf { System.getenv("GITHUB_REF_TYPE") == "tag" && Regex("""v\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?""").matches(it) }
+            .orEmpty()
+        buildConfigField("String", "RELEASE_TAG", "\"$releaseTag\"")
+    }
+
     packaging {
         resources {
             // BouncyCastle ships these in all three (bcpkix/bcutil/bcprov) multi-release jars.

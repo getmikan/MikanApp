@@ -181,10 +181,10 @@ internal fun ProfileAdapter.bindProxyNodeRow(
             .trimStart(' ', '|', '-', '_', '.', ':')
             .ifBlank { title }
     } ?: title
-    row.findViewById<TextView>(R.id.proxy_title).apply {
-        text = cleanTitle
-        androidx.appcompat.widget.TooltipCompat.setTooltipText(this, cleanTitle)
-    }
+    // No tooltip on the name: a view with a tooltip keeps every touch for itself, so a tap on
+    // the name never reached the row and only its edges picked the server. The name wraps to
+    // two lines, and long-press on the row stays the node menu.
+    row.findViewById<TextView>(R.id.proxy_title).text = cleanTitle
     val flagCard = row.findViewById<View>(R.id.proxy_flag_card)
     val flagImage = row.findViewById<com.google.android.material.imageview.ShapeableImageView>(R.id.proxy_flag_image)
     val flagText = row.findViewById<TextView>(R.id.proxy_flag)

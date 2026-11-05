@@ -261,7 +261,7 @@ internal class MainProxyProbe(private val activity: MainActivity) {
                 design.setPingingProfile(profile.uuid)
                 design.clearStandalonePingForProfile(profile.uuid)
                 val engineReady = pingMode == ServerPingMode.ThroughServer && runCatching {
-                    activity.resolveStatusSnapshot().serviceRunning &&
+                    activity.resolveStatusSnapshot().ready &&
                         withClash { queryProxyGroupNames(false).isNotEmpty() }
                 }.getOrDefault(false)
                 val activeUuid = if (pingMode == ServerPingMode.ThroughServer) withProfile { queryActive()?.uuid } else null
@@ -319,7 +319,7 @@ internal class MainProxyProbe(private val activity: MainActivity) {
             try {
                 val pingMode = uiStore.serverPingMode
                 val engineReady = pingMode == ServerPingMode.ThroughServer && runCatching {
-                    activity.resolveStatusSnapshot().serviceRunning &&
+                    activity.resolveStatusSnapshot().ready &&
                         withClash { queryProxyGroupNames(false).isNotEmpty() }
                 }.getOrDefault(false)
                 val activeUuid = if (pingMode == ServerPingMode.ThroughServer) withProfile { queryActive()?.uuid } else null

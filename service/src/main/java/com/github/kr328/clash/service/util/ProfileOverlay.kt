@@ -32,6 +32,7 @@ object ProfileOverlay {
         parseSnapshot: (File) -> ProfileSnapshot?,
         scriptRunner: ConfigScriptRunner = ConfigScriptRunner.Disabled,
         realityCompat: Boolean = false,
+        appRouting: AppRoutingConfig = AppRoutingConfig.Empty,
     ): Boolean {
         ProfileMigration.migrateIfNeeded(
             profileDir = profileDir,
@@ -53,6 +54,7 @@ object ProfileOverlay {
             hardeningMode = hardeningMode,
             scriptRunner = scriptRunner,
             realityCompat = realityCompat,
+            appRouting = appRouting,
         )
     }
 
@@ -89,6 +91,8 @@ object ProfileOverlay {
             parseSnapshot = { d -> runCatching { Clash.parseProfileSnapshot(d) }.getOrNull() },
             scriptRunner = scriptRunner,
             realityCompat = store.realityComposeRewrite,
+            // importedDir is filesDir/imported; the routing settings live in filesDir.
+            appRouting = AppRoutingStore(importedDir.parentFile ?: importedDir).loadConfig(),
         )
     }
 }

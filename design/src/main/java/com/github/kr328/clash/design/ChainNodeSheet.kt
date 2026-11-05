@@ -91,7 +91,8 @@ internal class ChainNodeSheet(
             val name = items[position]
             val checked = name == selected
             holder.name.text = name
-            TooltipCompat.setTooltipText(holder.name, name)
+            // On the row, not the name: a view with a tooltip keeps the tap for itself.
+            TooltipCompat.setTooltipText(holder.itemView, name)
             val code = FlagParser.parse(name)?.code
             val size = (32 * holder.itemView.resources.displayMetrics.density).toInt()
             val bitmap = FlagDrawableLoader.loadBitmap(holder.itemView.context, code, size)

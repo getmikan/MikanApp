@@ -114,7 +114,11 @@ object ProxyDialerYamlEdit {
                 continue
             }
             val dialer = m["dialer-proxy"]?.toString()?.trim().orEmpty()
-            if (dialer.isEmpty()) {
+            // The user's own "via VPN" proxies keep their dialer: without it they would dial the
+            // proxy straight from the real network, which their user turned off on purpose. The
+            // composer only points them at a group that exists.
+            val ownProxy = m["name"]?.toString().orEmpty().startsWith(AppRoutingRules.PROXY_NAME_PREFIX)
+            if (dialer.isEmpty() || ownProxy) {
                 out.add(raw)
                 continue
             }

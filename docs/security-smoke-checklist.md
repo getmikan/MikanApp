@@ -46,6 +46,8 @@ auth must survive the refresh (see `SubscriptionUpdateMerge.listeners` preservat
 - Toggle split-tunnel/access-control modes and verify traffic still routes as expected.
 - Trigger subscription update and verify runtime remains alive even if one update fails.
 - Reconnect sequence: stop VPN -> start VPN -> switch mode (`Rule/Global/Direct`) -> run traffic.
+- Kill switch on: make the running session die (e.g. switch to a profile that fails to load) and verify the VPN key stays, no app reaches the network, and the notification offers Reconnect and Disconnect; Disconnect brings the plain network back, Reconnect the session.
+- App proxies: route one app through an own SOCKS5 proxy "through the VPN" and check its exit IP is the proxy's; stop the proxy and verify that app is blocked (no fallback to the VPN or the network) and the screen marks the proxy as not reachable.
 
 ## Logging and privacy
 

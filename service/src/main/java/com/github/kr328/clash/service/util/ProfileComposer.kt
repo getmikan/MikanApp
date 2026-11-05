@@ -39,6 +39,7 @@ object ProfileComposer {
         hardeningMode: ProxyHardeningMode,
         scriptRunner: ConfigScriptRunner = ConfigScriptRunner.Disabled,
         realityCompat: Boolean = false,
+        appRouting: AppRoutingConfig = AppRoutingConfig.Empty,
     ): Boolean {
         val base = subscriptionFile(profileDir)
         if (!base.isFile) {
@@ -49,10 +50,13 @@ object ProfileComposer {
         // A broken user script must not cost the user a working tunnel: compose without it and
         // carry on. The failure is logged with its stable code so the editor can surface it.
         val composed = try {
-            ConfigComposer.compose(fetched, layer, geoDataUrls, hardeningMode, scriptRunner, realityCompat)
+            ConfigComposer.compose(fetched, layer, geoDataUrls, hardeningMode, scriptRunner, realityCompat, appRouting)
         } catch (e: ConfigScriptException) {
             Log.w("ProfileComposer: user script failed (${e.error.code}) in ${profileDir.name}, composing without it: ${e.message}")
-            ConfigComposer.compose(fetched, layer.copy(script = null), geoDataUrls, hardeningMode, realityCompat = realityCompat)
+            ConfigComposer.compose(
+                fetched, layer.copy(script = null), geoDataUrls, hardeningMode,
+                realityCompat = realityCompat, appRouting = appRouting,
+            )
         }
         File(profileDir, CONFIG_FILE).writeText(composed)
 
