@@ -11,6 +11,7 @@ import com.github.kr328.clash.design.preference.*
 import com.github.kr328.clash.design.store.UiStore
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.root
+import com.github.kr328.clash.service.model.SubscriptionErrorNotifications
 import com.github.kr328.clash.service.store.ServiceStore
 
 class AppSettingsDesign(
@@ -25,6 +26,7 @@ class AppSettingsDesign(
         ReCreateAllActivities,
         ApplyLanguage,
         CheckUpdates,
+        RescheduleSubscriptionUpdates,
     }
 
     private val binding = DesignSettingsCommonBinding
@@ -48,13 +50,6 @@ class AppSettingsDesign(
             )
 
             switch(
-                value = uiStore::updateProfileBeforeConnect,
-                icon = R.drawable.ic_baseline_update,
-                title = R.string.update_before_connect_title,
-                summary = R.string.update_before_connect_summary,
-            )
-
-            switch(
                 value = uiStore::betaUpdates,
                 icon = R.drawable.ic_outline_system_update,
                 title = R.string.beta_updates,
@@ -65,6 +60,60 @@ class AppSettingsDesign(
                     if (uiStore.betaUpdates) requests.trySend(Request.CheckUpdates)
                 }
             }
+
+            category(R.string.subscription_updates)
+
+            switch(
+                value = srvStore::subscriptionAutoUpdate,
+                icon = R.drawable.ic_baseline_sync,
+                title = R.string.subscription_auto_update_title,
+                summary = R.string.subscription_auto_update_summary,
+            ) {
+                // Arm or cancel every subscription's alarm now, not at the next reboot.
+                listener = OnChangedListener {
+                    requests.trySend(Request.RescheduleSubscriptionUpdates)
+                }
+            }
+
+            switch(
+                value = uiStore::updateProfileBeforeConnect,
+                icon = R.drawable.ic_baseline_update,
+                title = R.string.update_before_connect_title,
+                summary = R.string.update_before_connect_summary,
+            )
+
+            selectableList(
+                value = srvStore::subscriptionUpdateErrorNotifications,
+                values = SubscriptionErrorNotifications.values(),
+                valuesText = arrayOf(
+                    R.string.subscription_notify_errors_all,
+                    R.string.subscription_notify_errors_important,
+                    R.string.subscription_notify_errors_off,
+                ),
+                icon = R.drawable.ic_outline_error,
+                title = R.string.subscription_notify_errors_title,
+            )
+
+            switch(
+                value = srvStore::subscriptionUpdateSuccessNotification,
+                icon = R.drawable.ic_outline_notifications,
+                title = R.string.subscription_notify_success_title,
+                summary = R.string.subscription_notify_success_summary,
+            )
+
+            switch(
+                value = srvStore::subscriptionUpdateProgressNotification,
+                icon = R.drawable.ic_baseline_sync,
+                title = R.string.subscription_notify_progress_title,
+                summary = R.string.subscription_notify_progress_summary,
+            )
+
+            switch(
+                value = uiStore::subscriptionUpdateInAppMessages,
+                icon = R.drawable.ic_outline_chat_bubble,
+                title = R.string.subscription_in_app_messages_title,
+                summary = R.string.subscription_in_app_messages_summary,
+            )
 
             category(R.string.interface_)
 

@@ -37,5 +37,8 @@ object Intents {
 
     const val EXTRA_STOP_REASON = "stop_reason"
     const val EXTRA_UUID = "uuid"
+
+    /** On [ACTION_PROFILE_SCHEDULE_UPDATES]: re-arm or cancel every alarm even if already scheduled. */
+    const val EXTRA_FORCE_RESCHEDULE = "force_reschedule"
     const val EXTRA_FAIL_REASON = "fail_reason"
 }

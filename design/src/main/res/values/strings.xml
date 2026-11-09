@@ -669,7 +669,7 @@ Presets only change <b>where</b> files are downloaded from (CDN / host). It is s
     <string name="auto_restart">Auto Restart</string>
     <string name="allow_clash_auto_restart">Allow clash auto restart</string>
     <string name="update_before_connect_title">Update subscription before connecting</string>
-    <string name="update_before_connect_summary">Refresh a stale subscription when you tap Connect. Turn off to connect straight away with the saved config — scheduled updates still run.</string>
+    <string name="update_before_connect_summary">Refresh a stale subscription when you tap Connect. Turn off to connect straight away with the saved config.</string>
 
     <string name="route_system_traffic">Route System Traffic</string>
     <string name="routing_via_vpn_service">Auto routing all system traffic via VpnService</string>
@@ -1549,4 +1549,17 @@ Password: %4$s</string>
     <!-- App updates: beta channel -->
     <string name="beta_updates">Beta versions</string>
     <string name="beta_updates_summary">Install pre-release builds too: new features arrive sooner, and bugs may too</string>
+    <string name="subscription_updates">Subscription updates</string>
+    <string name="subscription_auto_update_title">Update subscriptions automatically</string>
+    <string name="subscription_auto_update_summary">Each subscription refreshes on its own interval. Off: subscriptions update only when you tap Update.</string>
+    <string name="subscription_notify_errors_title">Update error notifications</string>
+    <string name="subscription_notify_errors_all">All errors</string>
+    <string name="subscription_notify_errors_important">Only an expired subscription or the device limit</string>
+    <string name="subscription_notify_errors_off">Don\'t notify</string>
+    <string name="subscription_notify_success_title">Notify when a subscription updated</string>
+    <string name="subscription_notify_success_summary">A notification after a background update succeeds</string>
+    <string name="subscription_notify_progress_title">Show update progress</string>
+    <string name="subscription_notify_progress_summary">A notification while a subscription updates in the background</string>
+    <string name="subscription_in_app_messages_title">Report background updates in the app</string>
+    <string name="subscription_in_app_messages_summary">Messages when a scheduled update finished while the app was open. Updates you start yourself are always reported.</string>
 </resources>

@@ -1,14 +1,19 @@
 package com.github.kr328.clash
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import com.github.kr328.clash.common.compat.startForegroundServiceCompat
 import com.github.kr328.clash.common.constants.Components
+import com.github.kr328.clash.common.constants.Intents
+import com.github.kr328.clash.common.log.Log
 import com.github.kr328.clash.common.util.componentName
 import com.github.kr328.clash.design.AppSettingsDesign
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.model.Behavior
 import com.github.kr328.clash.design.ui.ToastDuration
+import com.github.kr328.clash.service.ProfileWorker
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.util.AppUpdateChecker
 import com.github.kr328.clash.util.ApplicationObserver
@@ -39,7 +44,9 @@ class AppSettingsActivity : BaseActivity<AppSettingsDesign>(), Behavior {
                     }
                 }
                 design.requests.onReceive { request ->
-                    if (request == AppSettingsDesign.Request.CheckUpdates) {
+                    if (request == AppSettingsDesign.Request.RescheduleSubscriptionUpdates) {
+                        rescheduleSubscriptionUpdates()
+                    } else if (request == AppSettingsDesign.Request.CheckUpdates) {
                         launch {
                             val started = runCatching { AppUpdateChecker.downloadUpdate(this@AppSettingsActivity) }
                                 .getOrDefault(false)
@@ -84,6 +91,15 @@ class AppSettingsActivity : BaseActivity<AppSettingsDesign>(), Behavior {
                 PackageManager.DONT_KILL_APP,
             )
         }
+
+    /** The worker re-reads the auto-update switch and arms or cancels every alarm. */
+    private fun rescheduleSubscriptionUpdates() {
+        val intent = Intent(Intents.ACTION_PROFILE_SCHEDULE_UPDATES)
+            .setComponent(ProfileWorker::class.componentName)
+            .putExtra(Intents.EXTRA_FORCE_RESCHEDULE, true)
+        runCatching { startForegroundServiceCompat(intent) }
+            .onFailure { Log.w("Reschedule subscription updates failed: $it") }
+    }
 
     private fun onHideIconChange(hide: Boolean) {
         val newState = if (hide) {

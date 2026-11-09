@@ -71,4 +71,5 @@
     <string name="kill_switch_blocked_text">VPN остановился. Переподключитесь или отключите VPN, чтобы пользоваться интернетом без него.</string>
     <string name="kill_switch_blocked_reason">VPN остановился: %1$s. Переподключитесь или отключите VPN, чтобы пользоваться интернетом без него.</string>
     <string name="kill_switch_reconnect">Переподключить</string>
+    <string name="update_succeeded_title">Подписка обновлена</string>
 </resources>

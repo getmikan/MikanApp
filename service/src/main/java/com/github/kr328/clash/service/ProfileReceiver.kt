@@ -20,10 +20,11 @@ import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.service.util.lastSubscriptionFetchAt
 import com.github.kr328.clash.service.util.importedDir
+import com.github.kr328.clash.service.util.MIN_SUBSCRIPTION_UPDATE_INTERVAL
+import com.github.kr328.clash.service.util.nextSubscriptionUpdateDelay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import java.util.concurrent.TimeUnit
 
 class ProfileReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -51,8 +52,12 @@ class ProfileReceiver : BroadcastReceiver() {
         private val lock = Mutex()
         private var initialized: Boolean = false
 
-        suspend fun rescheduleAll(context: Context) = lock.withLock {
-            if (initialized)
+        /**
+         * Arms every subscription's alarm once per process. [force] re-runs it anyway: the
+         * auto-update switch in Settings changed, so alarms must be armed or cancelled now.
+         */
+        suspend fun rescheduleAll(context: Context, force: Boolean = false) = lock.withLock {
+            if (initialized && !force)
                 return
 
             initialized = true
@@ -89,21 +94,20 @@ class ProfileReceiver : BroadcastReceiver() {
 
             context.getSystemService<AlarmManager>()?.cancel(intent)
 
-            if (imported.interval < TimeUnit.MINUTES.toMillis(15))
+            if (imported.interval < MIN_SUBSCRIPTION_UPDATE_INTERVAL)
                 return
 
-            val current = System.currentTimeMillis()
             // Count from the last fetch. subscription.yaml is written only when the subscription
             // is fetched; config.yaml is re-composed on every VPN start and profile load, so timing
             // from it pushed the next update back after every connect and a daily user never got one.
+            // Auto-update switched off in Settings arms nothing: only the user starts a refresh.
             val profileDir = context.importedDir.resolve(imported.uuid.toString())
-            val last = lastSubscriptionFetchAt(profileDir)
-
-            // file not existed
-            if (last <= 0)
-                return
-
-            val interval = (imported.interval - (current - last)).coerceAtLeast(0)
+            val interval = nextSubscriptionUpdateDelay(
+                autoUpdate = ServiceStore(context).subscriptionAutoUpdate,
+                intervalMillis = imported.interval,
+                lastFetchAt = lastSubscriptionFetchAt(profileDir),
+                now = System.currentTimeMillis(),
+            ) ?: return
 
             // Not a wakeup alarm: a subscription refresh can wait until the device is awake
             // anyway. With a WAKEUP alarm per subscription, many subscriptions meant the phone

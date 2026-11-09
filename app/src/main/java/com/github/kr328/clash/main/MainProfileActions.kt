@@ -299,10 +299,23 @@ internal class MainProfileActions(
 
     fun onProfileUpdateCompleted(uuid: UUID?) {
         if (uuid == null) return
+        // `announce` is true for an update the app did not start (scheduled, or Retry).
         val announce = design?.recordSubscriptionUpdateResult(uuid, true) == true
+        val quiet = announce && !uiStore.subscriptionUpdateInAppMessages
 
         activity.launch {
             val name = withProfile { queryByUUID(uuid)?.name } ?: return@launch
+            if (quiet) {
+                // The one-shot notes below belong to this update; drop them so they do not
+                // surface after the next one.
+                ServiceStore(activity).apply {
+                    consumeUpdateEngineWarning(uuid)
+                    consumeOrphanedRulesDropped(uuid)
+                    consumeRemovedProtocolSkipped(uuid)
+                    consumeProxyGroupsRepaired(uuid)
+                }
+                return@launch
+            }
             if (announce) design?.showToast(
                 activity.getString(R.string.toast_profile_updated_complete, name),
                 ToastDuration.Long
@@ -347,6 +360,8 @@ internal class MainProfileActions(
 
     fun onProfileUpdateFailed(uuid: UUID?, reason: String?) {
         if (uuid == null || design?.recordSubscriptionUpdateResult(uuid, false) != true) return
+        // The card still shows the failure; only the dialog for a background update is muted.
+        if (!uiStore.subscriptionUpdateInAppMessages) return
         activity.launch {
             val profile = withProfile { queryByUUID(uuid) } ?: return@launch
             design?.showSubscriptionUpdateFailure(profile, IllegalStateException(reason))

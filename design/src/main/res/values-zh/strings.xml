@@ -135,7 +135,7 @@
     <string name="allow_clash_auto_restart">允许 Clash 自动重启</string>
     <string name="auto_restart">自动重启</string>
     <string name="update_before_connect_title">连接前更新订阅</string>
-    <string name="update_before_connect_summary">点击“连接”时刷新过期的订阅。关闭后将直接使用已保存的配置连接 — 定时更新仍会照常运行。</string>
+    <string name="update_before_connect_summary">点击“连接”时刷新过期的订阅。关闭后将直接使用已保存的配置连接。</string>
     <string name="stopped">已停止</string>
     <string name="help">帮助</string>
     <string name="tap_to_start">点此启动</string>
@@ -1469,4 +1469,17 @@
     <!-- App updates: beta channel -->
     <string name="beta_updates">测试版</string>
     <string name="beta_updates_summary">也安装预发布版本：新功能更早到来，但可能有问题</string>
+    <string name="subscription_updates">订阅更新</string>
+    <string name="subscription_auto_update_title">自动更新订阅</string>
+    <string name="subscription_auto_update_summary">每个订阅按自己的间隔刷新。关闭后，只有点击“更新”时才会更新订阅。</string>
+    <string name="subscription_notify_errors_title">更新失败通知</string>
+    <string name="subscription_notify_errors_all">所有错误</string>
+    <string name="subscription_notify_errors_important">仅订阅过期或设备数达到上限</string>
+    <string name="subscription_notify_errors_off">不通知</string>
+    <string name="subscription_notify_success_title">订阅更新成功时通知</string>
+    <string name="subscription_notify_success_summary">后台更新成功后显示通知</string>
+    <string name="subscription_notify_progress_title">显示更新进度</string>
+    <string name="subscription_notify_progress_summary">订阅在后台更新时显示通知</string>
+    <string name="subscription_in_app_messages_title">在应用内提示后台更新</string>
+    <string name="subscription_in_app_messages_summary">应用打开时，定时更新完成后显示提示。你自己发起的更新始终会提示。</string>
 </resources>

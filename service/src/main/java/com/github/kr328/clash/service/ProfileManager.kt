@@ -237,6 +237,7 @@ class ProfileManager(private val context: Context) : IProfileManager,
                 ProfileProcessor.update(context, uuid, callback)
                 if (imported.source.startsWith("https://", true)) updateFlow(imported)
                 ImportedDao().queryByUUID(uuid)?.let { ProfileReceiver.scheduleNext(context, it) }
+                ProfileWorker.clearFailureNotification(context, uuid)
                 context.sendProfileUpdateCompleted(uuid)
             } catch (error: Exception) {
                 if (error !is kotlinx.coroutines.CancellationException) {

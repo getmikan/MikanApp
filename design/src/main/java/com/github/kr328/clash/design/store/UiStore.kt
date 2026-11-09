@@ -130,6 +130,16 @@ class UiStore(context: Context) {
         defaultValue = true,
     )
 
+    /**
+     * Toasts and the failure dialog for a subscription update the app did not start (a scheduled
+     * one, or the notification's Retry) that finished while the app was open. Updates the user
+     * starts in the app are always reported.
+     */
+    var subscriptionUpdateInAppMessages: Boolean by store.boolean(
+        key = "subscription_update_in_app_messages",
+        defaultValue = true,
+    )
+
     /** App updates include pre-release builds (betas), not only stable releases. */
     var betaUpdates: Boolean by store.boolean(
         key = "beta_updates",

@@ -9,6 +9,7 @@ import com.github.kr328.clash.service.PreferenceProvider
 import com.github.kr328.clash.service.model.AccessControlMode
 import com.github.kr328.clash.service.model.GeoDataSourcePreset
 import com.github.kr328.clash.service.model.ProxyHardeningMode
+import com.github.kr328.clash.service.model.SubscriptionErrorNotifications
 import java.util.*
 
 class ServiceStore(context: Context) {
@@ -136,6 +137,36 @@ class ServiceStore(context: Context) {
     var dynamicNotification by store.boolean(
         key = "dynamic_notification",
         defaultValue = true
+    )
+
+    /**
+     * Scheduled subscription refreshes (each subscription's own interval). Off: no alarms are
+     * armed and subscriptions refresh only when the user asks (Update, the notification's Retry,
+     * "Update before connecting"). Read by [com.github.kr328.clash.service.ProfileReceiver] every
+     * time it schedules, so turning it back on only needs a reschedule.
+     */
+    var subscriptionAutoUpdate by store.boolean(
+        key = "subscription_auto_update",
+        defaultValue = true
+    )
+
+    /** The ongoing "Updating <name>" notification while a background refresh runs. */
+    var subscriptionUpdateProgressNotification by store.boolean(
+        key = "subscription_update_progress_notification",
+        defaultValue = true
+    )
+
+    /** A notification after a background refresh succeeded. Off by default, as before. */
+    var subscriptionUpdateSuccessNotification by store.boolean(
+        key = "subscription_update_success_notification",
+        defaultValue = false
+    )
+
+    /** Which failed refreshes get a notification; see [SubscriptionErrorNotifications]. */
+    var subscriptionUpdateErrorNotifications by store.enum(
+        key = "subscription_update_error_notifications",
+        defaultValue = SubscriptionErrorNotifications.All,
+        values = SubscriptionErrorNotifications.values()
     )
 
     /**

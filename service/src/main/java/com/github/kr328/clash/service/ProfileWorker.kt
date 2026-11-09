@@ -1,6 +1,7 @@
 package com.github.kr328.clash.service
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Binder
@@ -19,7 +20,10 @@ import com.github.kr328.clash.common.util.setUUID
 import com.github.kr328.clash.common.util.uuid
 import com.github.kr328.clash.service.branding.BrandNotificationChrome
 import com.github.kr328.clash.service.data.ImportedDao
+import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.service.util.SubscriptionFetchException
+import com.github.kr328.clash.service.util.UpdateNotices
+import com.github.kr328.clash.service.util.updateNotices
 import com.github.kr328.clash.service.util.sendProfileUpdateCompleted
 import com.github.kr328.clash.service.util.sendProfileUpdateFailed
 import kotlinx.coroutines.*
@@ -62,8 +66,9 @@ class ProfileWorker : BaseService() {
                 }
             }
             Intents.ACTION_PROFILE_SCHEDULE_UPDATES -> {
+                val force = intent.getBooleanExtra(Intents.EXTRA_FORCE_RESCHEDULE, false)
                 val job = launch {
-                    ProfileReceiver.rescheduleAll(service)
+                    ProfileReceiver.rescheduleAll(service, force)
                 }
 
                 enqueue(job)
@@ -102,7 +107,7 @@ class ProfileWorker : BaseService() {
                 ProfileProcessor.update(this, imported.uuid, null)
             }
 
-            completed(imported.uuid)
+            completed(imported.uuid, imported.name)
 
             ProfileReceiver.scheduleNext(this, imported)
         } catch (e: Exception) {
@@ -143,6 +148,11 @@ class ProfileWorker : BaseService() {
     }
 
     private suspend inline fun processing(name: String, block: () -> Unit) {
+        if (!ServiceStore(this).subscriptionUpdateProgressNotification) {
+            block()
+            return
+        }
+
         val id = UndefinedIds.next()
 
         val notification = NotificationCompat.Builder(this, STATUS_CHANNEL)
@@ -186,9 +196,31 @@ class ProfileWorker : BaseService() {
             .also { builder -> chrome.logo()?.let(builder::setLargeIcon) }
     }
 
-    private fun completed(uuid: UUID) {
-        // No system notification on success — callers use broadcast; avoids noisy "subscription updated" toasts.
+    private fun completed(uuid: UUID, name: String) {
+        val store = ServiceStore(this)
+        val notices = updateNotices(
+            success = true,
+            errorCode = null,
+            successNotification = store.subscriptionUpdateSuccessNotification,
+            errorNotifications = store.subscriptionUpdateErrorNotifications,
+        )
+        val id = resultIdOf(uuid)
+        applyCancels(notices, id)
+
+        if (notices.postSuccess) {
+            val builder = resultBuilder(id, uuid)
+                .setContentTitle(getString(R.string.update_succeeded_title))
+                .setContentText(name)
+            NotificationManagerCompat.from(this).notify(SUCCESS_TAG, id, builder.build())
+        }
+
         sendProfileUpdateCompleted(uuid)
+    }
+
+    private fun applyCancels(notices: UpdateNotices, id: Int) {
+        val notifications = NotificationManagerCompat.from(this)
+        if (notices.cancelSuccess) notifications.cancel(SUCCESS_TAG, id)
+        if (notices.cancelFailure) notifications.cancel(FAILURE_TAG, id)
     }
 
     /**
@@ -198,10 +230,25 @@ class ProfileWorker : BaseService() {
      * action — Renew (expired), Support (device limit) and Retry.
      */
     private fun failed(uuid: UUID, name: String, error: Throwable) {
-        val id = UndefinedIds.next()
+        // One failure notification per subscription: a newer failure replaces the older one
+        // instead of piling up, and the next success removes it (see [completed]).
+        val id = resultIdOf(uuid)
         val reason = error.message ?: "Unknown"
         val fetch = error as? SubscriptionFetchException
         val code = fetch?.code ?: SubscriptionFetchException.codeOf(reason)
+        val store = ServiceStore(this)
+        val notices = updateNotices(
+            success = false,
+            errorCode = code,
+            successNotification = store.subscriptionUpdateSuccessNotification,
+            errorNotifications = store.subscriptionUpdateErrorNotifications,
+        )
+        applyCancels(notices, id)
+
+        if (!notices.postFailure) {
+            sendProfileUpdateFailed(uuid, reason)
+            return
+        }
 
         val title: String
         val body: String
@@ -271,8 +318,7 @@ class ProfileWorker : BaseService() {
             ),
         )
 
-        NotificationManagerCompat.from(this)
-            .notify(id, builder.build())
+        NotificationManagerCompat.from(this).notify(FAILURE_TAG, id, builder.build())
 
         sendProfileUpdateFailed(uuid, reason)
     }
@@ -281,6 +327,18 @@ class ProfileWorker : BaseService() {
         private const val SERVICE_CHANNEL = "profile_service_channel"
         private const val STATUS_CHANNEL = "profile_status_channel"
         private const val RESULT_CHANNEL = "profile_result_channel"
+
+        // Result notifications are keyed by (tag, subscription) so each subscription has at most
+        // one failure and one success entry; tags keep them apart from UndefinedIds' counter.
+        private const val FAILURE_TAG = "profile_update_failure"
+        private const val SUCCESS_TAG = "profile_update_success"
+
+        private fun resultIdOf(uuid: UUID): Int = uuid.hashCode()
+
+        /** The subscription updated fine some other way (from the app): its failure is stale. */
+        fun clearFailureNotification(context: Context, uuid: UUID) {
+            NotificationManagerCompat.from(context).cancel(FAILURE_TAG, resultIdOf(uuid))
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder {

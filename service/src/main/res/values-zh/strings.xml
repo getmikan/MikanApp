@@ -69,4 +69,5 @@
     <string name="kill_switch_blocked_text">VPN 已停止。请重新连接，或关闭 VPN 以不经 VPN 上网。</string>
     <string name="kill_switch_blocked_reason">VPN 已停止：%1$s。请重新连接，或关闭 VPN 以不经 VPN 上网。</string>
     <string name="kill_switch_reconnect">重新连接</string>
+    <string name="update_succeeded_title">订阅已更新</string>
 </resources>

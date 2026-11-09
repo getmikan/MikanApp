@@ -78,4 +78,5 @@
     <string name="kill_switch_blocked_text">The VPN stopped. Reconnect, or turn the VPN off to use the internet without it.</string>
     <string name="kill_switch_blocked_reason">The VPN stopped: %1$s. Reconnect, or turn the VPN off to use the internet without it.</string>
     <string name="kill_switch_reconnect">Reconnect</string>
+    <string name="update_succeeded_title">Subscription updated</string>
 </resources>
