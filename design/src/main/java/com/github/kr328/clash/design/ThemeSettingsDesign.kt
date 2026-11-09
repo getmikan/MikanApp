@@ -474,7 +474,7 @@ class ThemeSettingsDesign(
         val preview = ContextThemeWrapper(context, if (night) R.style.AppThemeDark else R.style.AppThemeLight)
         BrandThemeApplier.paletteOverlay(palette, night)?.let { preview.theme.applyStyle(it, true) }
         if (night && uiStore.trueBlack) preview.theme.applyStyle(R.style.ThemeOverlay_ClashFest_TrueBlack, true)
-        return intArrayOf(preview.resolveThemedColor(com.google.android.material.R.attr.colorPrimary),
+        return intArrayOf(preview.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary),
             preview.resolveThemedColor(com.google.android.material.R.attr.colorPrimaryContainer),
             preview.resolveThemedColor(com.google.android.material.R.attr.colorSurfaceContainerLow),
             preview.resolveThemedColor(com.google.android.material.R.attr.colorSecondaryContainer))

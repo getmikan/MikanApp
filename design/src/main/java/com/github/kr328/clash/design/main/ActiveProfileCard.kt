@@ -14,7 +14,6 @@ import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.subscriptionStatus
 import com.github.kr328.clash.design.util.toBytesString
 import com.github.kr328.clash.service.model.Profile
-import com.google.android.material.R as MaterialR
 
 /** SVG → [ImageView.setImageBitmap] at the view's pixel width; emoji/globe fallbacks otherwise. */
 internal fun bindMainNodeFlag(context: Context, binding: DesignMainBinding, flag: ParsedFlag?) {
@@ -29,7 +28,7 @@ internal fun bindMainNodeFlag(context: Context, binding: DesignMainBinding, flag
         image.setPadding(pad, pad, pad, pad)
         image.setImageResource(R.drawable.ic_baseline_language)
         image.imageTintList = ColorStateList.valueOf(
-            context.resolveThemedColor(MaterialR.attr.colorPrimary),
+            context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary),
         )
     }
 

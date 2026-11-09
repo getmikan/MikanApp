@@ -29,7 +29,7 @@ class ExpressiveBackdropView @JvmOverloads constructor(context: Context, attrs: 
     private var phase = 0f
     private var lastFrame = 0L
     private val observer = LifecycleEventObserver { _, _ -> refreshMotion() }
-    private val primary = context.resolveThemedColor(MaterialR.attr.colorPrimary)
+    private val primary = context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary)
     private val secondary = context.resolveThemedColor(MaterialR.attr.colorSecondary)
 
     init {

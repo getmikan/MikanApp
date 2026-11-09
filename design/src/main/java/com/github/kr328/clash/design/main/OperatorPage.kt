@@ -192,7 +192,7 @@ private fun buildOperatorRow(context: Context, link: OperatorLink, onOpenBrandUr
         }
         setImageResource(link.iconRes)
         imageTintList = android.content.res.ColorStateList.valueOf(
-            context.resolveThemedColor(MaterialR.attr.colorPrimary)
+            context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary)
         )
     }
     row.addView(icon)

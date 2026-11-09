@@ -11,7 +11,7 @@ internal fun Context.showCustomAccentDialog(accent: Int?, onSelected: (Int) -> U
     val context = this
     fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     val hsv = FloatArray(3)
-    Color.colorToHSV(accent ?: context.resolveThemedColor(com.google.android.material.R.attr.colorPrimary), hsv)
+    Color.colorToHSV(accent ?: context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary), hsv)
 
     val svView = com.github.kr328.clash.design.view.SaturationValueView(context).apply {
         layoutParams = android.widget.LinearLayout.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, dp(200))

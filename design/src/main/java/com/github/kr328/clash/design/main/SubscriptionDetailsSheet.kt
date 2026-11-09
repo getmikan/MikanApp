@@ -82,7 +82,7 @@ internal class SubscriptionDetailsSheet(
                 java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM).format(java.util.Date(profile.expire)))
         } else ""
         sheet.detailExpiry.setTextColor(context.resolveThemedColor(
-            if (profile.expire > 0L && profile.expire <= System.currentTimeMillis()) MaterialR.attr.colorError
+            if (profile.expire > 0L && profile.expire <= System.currentTimeMillis()) androidx.appcompat.R.attr.colorError
             else MaterialR.attr.colorOnSurfaceVariant,
         ))
         bindServerGroups(sheet, profile)
@@ -128,7 +128,7 @@ internal class SubscriptionDetailsSheet(
         sheet.detailUpdate.setOnClickListener { onUpdate(profile) }
         sheet.detailUpdateStatus.visibility = if (failed) View.VISIBLE else View.GONE
         sheet.detailUpdateStatus.setText(R.string.subscription_update_error)
-        sheet.detailUpdateStatus.setTextColor(context.resolveThemedColor(MaterialR.attr.colorError))
+        sheet.detailUpdateStatus.setTextColor(context.resolveThemedColor(androidx.appcompat.R.attr.colorError))
     }
 
     /** The subscription's server groups with traffic of their own (a mikan panel's), and when it starts over. */

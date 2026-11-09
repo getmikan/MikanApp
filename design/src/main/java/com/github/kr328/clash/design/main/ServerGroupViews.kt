@@ -58,7 +58,7 @@ private fun MikanGroups.Group.detailLine(context: Context): String? {
 }
 
 private fun Context.groupAccent(low: Boolean): Int =
-    resolveThemedColor(if (low) MaterialR.attr.colorError else MaterialR.attr.colorPrimary)
+    resolveThemedColor(if (low) androidx.appcompat.R.attr.colorError else androidx.appcompat.R.attr.colorPrimary)
 
 /**
  * A row per group in [container] (item_server_group), reusing the rows already there: the Home

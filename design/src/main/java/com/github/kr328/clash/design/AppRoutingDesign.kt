@@ -231,7 +231,7 @@ class AppRoutingDesign(context: Context) : Design<AppRoutingDesign.Request>(cont
             statusView.setTextColor(
                 MaterialColors.getColor(
                     statusView,
-                    if (error) com.google.android.material.R.attr.colorError else com.google.android.material.R.attr.colorOnSurfaceVariant,
+                    if (error) androidx.appcompat.R.attr.colorError else com.google.android.material.R.attr.colorOnSurfaceVariant,
                 ),
             )
         }

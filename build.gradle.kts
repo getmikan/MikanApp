@@ -69,7 +69,7 @@ subprojects {
                 else "com.github.kr328.clash.$name"
             }
 
-            minSdk = if (isApp && isAppBundleBuild) 24 else 21
+            minSdk = if (isApp && isAppBundleBuild) 24 else 23
             targetSdk = 36
 
             versionName = "0.1.5"

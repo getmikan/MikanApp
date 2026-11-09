@@ -139,7 +139,7 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
                 val tint = MaterialColors.getColor(
                     button,
                     if (active) {
-                        com.google.android.material.R.attr.colorPrimary
+                        androidx.appcompat.R.attr.colorPrimary
                     } else {
                         com.google.android.material.R.attr.colorOnSurfaceVariant
                     },

@@ -114,8 +114,8 @@ mihomo. Добавьте совместимую подписку или конф
 Requirements: **JDK 21**, Android SDK **36**, Build Tools **35.0.0**, NDK
 **29.0.14206865**, CMake and a compatible Go **1.26** toolchain. The checked-in
 wrapper uses Gradle **8.11.1** and Android Gradle Plugin **8.10.1**. Direct APKs
-support Android 5.0 / API 21. Google Play bundles require Android 7.0 / API 24
-to support Play automatic protection.
+support Android 6.0 / API 23, the minimum of Material Components 1.14. Google
+Play bundles require Android 7.0 / API 24 to support Play automatic protection.
 
 ```sh
 git clone --recurse-submodules https://github.com/getmikan/MikanApp.git

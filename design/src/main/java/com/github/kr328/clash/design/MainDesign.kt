@@ -5,7 +5,6 @@ import android.os.SystemClock
 import android.view.View
 import androidx.databinding.ObservableInt
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.material.R as MaterialR
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.github.kr328.clash.core.model.ProxyGroup
@@ -929,7 +928,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         tabItemTouchHelper.attachToRecyclerView(binding.profilesTabList)
         binding.profilesTabSort.setOnClickListener { showProfilesTabSort(it) }
         binding.profilesTabRefresh.setOnChildScrollUpCallback { _, _ -> binding.profilesTabList.canScrollVertically(-1) }
-        binding.profilesTabRefresh.setColorSchemeColors(context.resolveThemedColor(MaterialR.attr.colorPrimary))
+        binding.profilesTabRefresh.setColorSchemeColors(context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary))
         binding.profilesTabRefresh.setOnRefreshListener { requestAllSubscriptionUpdates() }
         renderHomeSubscriptionLayout()
 

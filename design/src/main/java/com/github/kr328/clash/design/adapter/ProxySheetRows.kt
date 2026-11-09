@@ -30,7 +30,7 @@ internal fun ProfileAdapter.bindSubscriptionStatus(
         else R.string.proxy_sheet_status_disconnected
     )
     val tint = if (connected) {
-        MaterialColors.getColor(sheet.root, com.google.android.material.R.attr.colorPrimary)
+        MaterialColors.getColor(sheet.root, androidx.appcompat.R.attr.colorPrimary)
     } else {
         MaterialColors.getColor(sheet.root, com.google.android.material.R.attr.colorOnSurfaceVariant)
     }

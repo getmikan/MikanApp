@@ -75,7 +75,7 @@ class SubscriptionIdentityDesign(context: Context) : Design<SubscriptionIdentity
             setImageResource(link.iconRes)
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
             imageTintList = ColorStateList.valueOf(
-                context.resolveThemedColor(MaterialR.attr.colorPrimary)
+                context.resolveThemedColor(androidx.appcompat.R.attr.colorPrimary)
             )
         }
         row.addView(icon)
