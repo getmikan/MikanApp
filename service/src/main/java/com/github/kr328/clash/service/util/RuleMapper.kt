@@ -70,7 +70,7 @@ object RuleMapper {
     fun mergeStateIntoConfig(configText: String, state: RuleState, geoDataUrls: GeoDataUrls): String {
         val document = MihomoConfigDocument.parseOrEmpty(configText)
         val root = document.root
-        root["rule-providers"] = state.providers
+        val providers = state.providers
             .filter { it.enabled }
             .associate { p ->
                 p.name to linkedMapOf<String, Any?>(
@@ -87,6 +87,12 @@ object RuleMapper {
                     if (p.format.isNotBlank()) put("format", p.format)
                 }
             }
+        // An empty block the config never had is not written: the engine reads an absent and an
+        // empty `rule-providers` differently in its snapshot. A block that was there is still
+        // replaced, emptied when the user turned every provider off.
+        if (providers.isNotEmpty() || root.containsKey("rule-providers")) {
+            root["rule-providers"] = providers
+        }
 
         root["rules"] = state.rules
             .filter { it.enabled && !it.deleted }
