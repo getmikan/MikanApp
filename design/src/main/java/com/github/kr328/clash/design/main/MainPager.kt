@@ -102,10 +102,9 @@ internal class MainPager(
      * Preserves: registered OnPageChangeCallback, current logical tab when possible,
      * the touch-slop tweak (we don't re-run it).
      */
-    private fun rebuildMainPagerForTabs() {
-        // Snapshot the tab the user is currently on so we can stay there
-        // (or fall back to Home if it's no longer in the set).
-        val currentLogical = mainTabForPagerPosition(binding.mainPager.currentItem)
+    private fun rebuildMainPagerForTabs(currentLogical: MainTab?) {
+        // Stay on the tab the user was on (the caller reads it before [activeTabs] changes),
+        // or fall back to Home if it's no longer in the set.
         attachPagerAdapter()
 
         MainTab.values().forEach { tab ->
@@ -164,8 +163,11 @@ internal class MainPager(
             else -> DEFAULT_TABS
         }
         if (desired == activeTabs) return
+        // Read the shown tab against the old set: the same pager position names another tab
+        // once the set changes (Settings would become Routing when Operator arrives).
+        val shown = if (pagerInitialised) mainTabForPagerPosition(binding.mainPager.currentItem) else null
         activeTabs = desired
-        if (pagerInitialised) rebuildMainPagerForTabs()
+        if (pagerInitialised) rebuildMainPagerForTabs(shown)
     }
 
     /**

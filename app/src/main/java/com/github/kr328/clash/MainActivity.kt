@@ -59,7 +59,7 @@ class MainActivity : BaseActivity<MainDesign>() {
     private val tunnel = MainTunnelModeController(this)
     private val probe = MainProxyProbe(this)
     private val dashboard = MainDashboardFetcher(this, tunnel, probe)
-    private val subscriptionMetadata = MainSubscriptionMetadata(this)
+    private val subscriptionMetadata = MainSubscriptionMetadata(this) { dashboard.applyActiveBrand() }
     private val imports: MainImportFlows = MainImportFlows(this, tunnel, dashboard) { scanLauncher.launch(null) }
     private val bypass = MainBypassPrompter(this)
     private val connection = MainConnectionController(this, dashboard, probe, bypass, imports)

@@ -51,6 +51,8 @@ class ProfileAdapter(
     private val readProxyGroupLayout: () -> String = { "" },
     internal val writeProxyGroupLayout: (String) -> Unit = {},
     val states: ProfilePageState = ProfilePageState(),
+    /** Makes a profile the active one; Home's adapter activates on a card tap, the tab's opens details. */
+    private val onActivate: (Profile) -> Unit = onClicked,
 ) : RecyclerView.Adapter<ProfileAdapter.Holder>() {
     sealed class Holder(view: View) : RecyclerView.ViewHolder(view)
     class ProfileHolder(val binding: AdapterProfileBinding) : Holder(binding.root)
@@ -68,6 +70,9 @@ class ProfileAdapter(
     internal var serverPingMode = ServerPingMode.ThroughServer
     internal var proxyDetails: Map<String, ProxyGroup> = emptyMap()
     internal var activeProfileUuid: UUID? = null
+
+    /** Makes [profile] the active one (the host's activate request). */
+    internal fun activateProfile(profile: Profile) = onActivate(profile)
     internal var clashRunning: Boolean = false
     internal var tunnelMode: TunnelState.Mode? = null
     internal var lastGroupHint: String? = null

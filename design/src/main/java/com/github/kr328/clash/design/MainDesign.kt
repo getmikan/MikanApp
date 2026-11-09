@@ -215,6 +215,7 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         states = profileAdapter.states,
         readProxyGroupLayout = { uiStore.proxyGroupLayout },
         writeProxyGroupLayout = { uiStore.proxyGroupLayout = it },
+        onActivate = { profile -> profileActivateRequests.trySend(profile) },
     )
     private var tabProfilesAll: List<Profile> = emptyList()
     private val subscriptionUpdates = SubscriptionUpdates(
