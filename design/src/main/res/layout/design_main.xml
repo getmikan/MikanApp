@@ -577,7 +577,7 @@
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:padding="8dp"
-                            android:src="@drawable/ic_baseline_stack"
+                            android:src="@drawable/ic_baseline_tv"
                             app:tint="?attr/colorPrimary"
                             tools:ignore="ContentDescription" />
 
@@ -1100,7 +1100,7 @@
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
         </LinearLayout>
 
-        <androidx.core.widget.NestedScrollView
+        <com.github.kr328.clash.design.view.FocusInsetNestedScrollView
             android:id="@+id/main_routing_page"
             android:background="@android:color/transparent"
             android:layout_width="match_parent"
@@ -1482,9 +1482,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+        </com.github.kr328.clash.design.view.FocusInsetNestedScrollView>
 
-        <androidx.core.widget.NestedScrollView
+        <com.github.kr328.clash.design.view.FocusInsetNestedScrollView
             android:id="@+id/main_operator_page"
             android:background="@android:color/transparent"
             android:layout_width="match_parent"
@@ -1621,9 +1621,9 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+        </com.github.kr328.clash.design.view.FocusInsetNestedScrollView>
 
-        <androidx.core.widget.NestedScrollView
+        <com.github.kr328.clash.design.view.FocusInsetNestedScrollView
             android:id="@+id/main_settings_page"
             android:background="@android:color/transparent"
             android:layout_width="match_parent"
@@ -1748,6 +1748,7 @@
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:id="@+id/main_settings_identity_summary"
                                     android:text="@string/main_open_subscription_identity_summary"
                                     android:textAppearance="@style/TextAppearance.App.BodySmall"
                                     android:textColor="?attr/colorOnSurfaceVariant"
@@ -1760,6 +1761,105 @@
                                 android:src="@drawable/ic_baseline_chevron_right"
                                 android:importantForAccessibility="no"
                                 app:tint="?attr/colorOnSurfaceVariant"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/main_settings_app_routing_card"
+                            android:stateListAnimator="@animator/focus_scale"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="72dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="12dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:visibility="gone"
+                            android:background="?attr/selectableItemBackground"
+                            android:onClick="@{() -&gt; self.request(Request.OpenPerAppRouting)}">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_baseline_subscriptions"
+                                android:importantForAccessibility="no"
+                                app:tint="?attr/colorOnSurfaceVariant"/>
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="16dp"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/access_control_packages"
+                                    android:textAppearance="@style/TextAppearance.App.BodyLarge"
+                                    android:textColor="?attr/colorOnSurface"/>
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/routing_hub_per_app_summary"
+                                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/ic_baseline_chevron_right"
+                                android:importantForAccessibility="no"
+                                app:tint="?attr/colorOnSurfaceVariant"/>
+                        </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/main_settings_tv_tools_card"
+                            android:stateListAnimator="@animator/focus_scale"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:minHeight="72dp"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="12dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:visibility="gone"
+                            android:background="?attr/selectableItemBackground">
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_baseline_extension"
+                                android:importantForAccessibility="no"
+                                app:tint="?attr/colorOnSurfaceVariant"/>
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="16dp"
+                                android:orientation="vertical">
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tv_advanced_tools_title"
+                                    android:textAppearance="@style/TextAppearance.App.BodyLarge"
+                                    android:textColor="?attr/colorOnSurface"/>
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/tv_advanced_tools_summary"
+                                    android:textAppearance="@style/TextAppearance.App.BodySmall"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:layout_marginTop="4dp"/>
+                            </LinearLayout>
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/main_settings_tv_tools_switch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="12dp"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:importantForAccessibility="no"
+                                android:minHeight="0dp"/>
                         </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -2043,7 +2143,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
-        </androidx.core.widget.NestedScrollView>
+        </com.github.kr328.clash.design.view.FocusInsetNestedScrollView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/main_bottom_nav_card"

@@ -66,6 +66,11 @@ internal class MainImportFlows(
             dialog.dismiss()
             activity.launch { importFromFile(design) }
         }
+        // TV: no camera to scan with and no clipboard to paste from; add by URL or file instead.
+        if (activity.isTelevision()) {
+            view.findViewById<View>(R.id.opt_clipboard).visibility = View.GONE
+            view.findViewById<View>(R.id.opt_qr).visibility = View.GONE
+        }
         // Companion "control a TV" entry — phones only; on TV it lives on the home screen.
         view.findViewById<View>(R.id.opt_companion).also { row ->
             row.visibility = if (activity.isTelevision()) View.GONE else View.VISIBLE

@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design
 
+import com.github.kr328.clash.design.util.capContentWidthOnTv
 import android.content.Context
 import android.view.View
 import android.widget.ArrayAdapter
@@ -59,6 +60,7 @@ class ProxyChainDesign(context: Context) : Design<ProxyChainDesign.Request>(cont
     fun savedProfile(): UUID? = savedOwner
 
     init {
+        root.capContentWidthOnTv()
         val scroll: NestedScrollView = view.findViewById(R.id.proxy_chain_scroll)
         val horizontalPadding = context.resources.getDimensionPixelSize(R.dimen.main_padding_horizontal)
         val bottomPadding = context.resources.getDimensionPixelSize(R.dimen.main_padding_horizontal)

@@ -1482,4 +1482,13 @@
     <string name="subscription_notify_progress_summary">订阅在后台更新时显示通知</string>
     <string name="subscription_in_app_messages_title">在应用内提示后台更新</string>
     <string name="subscription_in_app_messages_summary">应用打开时，定时更新完成后显示提示。你自己发起的更新始终会提示。</string>
+    <string name="companion_tv_steps">在手机上打开 Mikan，点按 + → %1$s → %2$s，然后用相机对准此二维码。</string>
+    <string name="companion_tv_qr_off">开启远程控制以显示配对二维码</string>
+    <string name="companion_tv_qr_starting">正在启动远程控制…</string>
+    <string name="app_routing_empty">没有符合当前筛选条件的应用。请清除搜索或在 ⋮ 菜单中更改筛选。</string>
+    <string name="tv_advanced_tools_title">电视高级工具</string>
+    <string name="tv_advanced_tools_summary">显示规则编辑器、代理链和配置工具</string>
+    <string name="main_open_subscription_identity_summary_tv">HWID、clashfest:// 方案与诊断</string>
+    <string name="tv_advanced_tools_state_on">已开启</string>
+    <string name="tv_advanced_tools_state_off">已关闭</string>
 </resources>

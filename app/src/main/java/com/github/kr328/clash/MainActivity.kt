@@ -1,5 +1,7 @@
 package com.github.kr328.clash
 
+import com.github.kr328.clash.design.util.isTelevision
+import androidx.activity.addCallback
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -555,6 +557,16 @@ class MainActivity : BaseActivity<MainDesign>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // TV: BACK on a non-Home tab returns to Home first; on Home it exits as usual.
+        if (isTelevision()) {
+            onBackPressedDispatcher.addCallback(this) {
+                if (design?.handleTvBack() == true) return@addCallback
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+                isEnabled = true
+            }
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val requestPermissionLauncher =

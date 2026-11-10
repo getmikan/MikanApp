@@ -1,7 +1,10 @@
 package com.github.kr328.clash.design
 
+import com.github.kr328.clash.design.util.capContentWidthOnTv
+import com.github.kr328.clash.design.util.isTelevision
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -103,23 +106,44 @@ class RulesHubDesign(context: Context) : Design<RulesHubDesign.Request>(context)
         },
     )
 
+    private val floatingSaveBar = context.isTelevision()
+
     init {
+        root.capContentWidthOnTv()
+        if (floatingSaveBar) {
+            val density = context.resources.displayMetrics.density
+            saveBar.radius = 16 * density
+            saveBar.cardElevation = 4 * density
+        }
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(bars.left, bars.top, bars.right, 0)
             val density = context.resources.displayMetrics.density
             val gap = (8 * density).toInt()
-            val barPad = bars.bottom + gap
-            saveBar.setContentPadding(saveBar.contentPaddingLeft, saveBar.contentPaddingTop, saveBar.contentPaddingRight, barPad)
+            if (floatingSaveBar) {
+                // TV: the bar floats as a card inset to the content column (16dp, like the rows),
+                // instead of a square slab cut off by the capped column's edges.
+                val m = (16 * density).toInt()
+                (saveBar.layoutParams as ViewGroup.MarginLayoutParams).setMargins(m, 0, m, bars.bottom + m)
+                saveBar.requestLayout()
+            } else {
+                val barPad = bars.bottom + gap
+                saveBar.setContentPadding(saveBar.contentPaddingLeft, saveBar.contentPaddingTop, saveBar.contentPaddingRight, barPad)
+            }
             // Pad the list by the pinned bar's REAL height (measured after it
             // applies its own bottom inset) so it never covers the last rows or
             // a section's expand control. (The old `88` was raw px, ~30dp.)
             saveBar.doOnLayout {
+                val below = (saveBar.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+                if (floatingSaveBar) {
+                    fitTvListAboveSaveBar()
+                    return@doOnLayout
+                }
                 recycler.setPadding(
                     recycler.paddingLeft,
                     0,
                     recycler.paddingRight,
-                    saveBar.height + gap,
+                    saveBar.height + below + gap,
                 )
             }
             insets
@@ -130,11 +154,42 @@ class RulesHubDesign(context: Context) : Design<RulesHubDesign.Request>(context)
         recycler.adapter = adapter
         recycler.setHasFixedSize(false)
         adapter.attachItemTouchHelper(recycler)
+        if (floatingSaveBar) {
+            // TV: coming back UP to the header (search, filters) left the list half-scrolled, the
+            // title off screen and the focused field's ring cut at the top edge. Show it whole.
+            recycler.viewTreeObserver.addOnGlobalFocusChangeListener { _, newFocus ->
+                val item = newFocus?.let { recycler.findContainingItemView(it) } ?: return@addOnGlobalFocusChangeListener
+                if (recycler.getChildAdapterPosition(item) == 0) {
+                    (recycler.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                }
+            }
+        }
 
         btnSave.setOnClickListener { requests.trySend(Request.Save) }
         rootView.findViewById<View>(R.id.btn_import_rules).setOnClickListener { requests.trySend(Request.ImportRules) }
         rootView.findViewById<View>(R.id.btn_edit_source).setOnClickListener { requests.trySend(Request.EditSource) }
         noProfileNotice.setOnClickListener { requests.trySend(Request.Reload) }
+        if (floatingSaveBar) {
+            saveBar.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+                if (bottom - top != oldBottom - oldTop) fitTvListAboveSaveBar()
+            }
+        }
+    }
+
+    /**
+     * TV: the list ends above the floating bar instead of scrolling under it, so no rows show
+     * through the margin between the bar and the screen edge. The last row keeps 16dp above the
+     * bar, clear of its focus ring.
+     */
+    private fun fitTvListAboveSaveBar() {
+        val below = (saveBar.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+        val lp = recycler.layoutParams as ViewGroup.MarginLayoutParams
+        val margin = saveBar.height + below
+        val pad = (16 * context.resources.displayMetrics.density).toInt()
+        if (lp.bottomMargin == margin && recycler.paddingBottom == pad && recycler.paddingTop == 0) return
+        lp.bottomMargin = margin
+        recycler.layoutParams = lp
+        recycler.setPadding(recycler.paddingLeft, 0, recycler.paddingRight, pad)
     }
 
     fun showNoProfile() {
@@ -244,6 +299,14 @@ class RulesHubDesign(context: Context) : Design<RulesHubDesign.Request>(context)
     }
 
     fun setSaveBusy(busy: Boolean) {
+        if (floatingSaveBar) {
+            // TV: a disabled Save button handed its focus to the search field at the top, which
+            // scrolled the list back to the start. It keeps focus instead and ignores CENTER while
+            // the save runs, so closing the preview lands on Save rules where the user left it.
+            btnSave.isClickable = !busy
+            btnSave.alpha = if (busy) 0.5f else 1f
+            return
+        }
         btnSave.isEnabled = !busy
     }
 

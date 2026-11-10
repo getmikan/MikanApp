@@ -39,6 +39,20 @@ class LiquidNavigationBar @JvmOverloads constructor(context: Context, attrs: Att
     private var expanded = true
     private var lastWidth = 0
 
+    /**
+     * TV rail: the items stack top to bottom at [railItemHeight] each, icon over label, and the
+     * capsule glides between them. Off (the default) is the phone's horizontal bar.
+     */
+    var vertical = false
+        set(value) {
+            if (field == value) return
+            field = value
+            items = emptyList()
+            requestLayout()
+        }
+    var railItemHeight = 0
+    var railItemGap = 0
+
     init { setWillNotDraw(false) }
 
     private fun dp(value: Int) = value * resources.displayMetrics.density
@@ -73,6 +87,10 @@ class LiquidNavigationBar @JvmOverloads constructor(context: Context, attrs: Att
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if (vertical) {
+            measureRail(widthMeasureSpec, heightMeasureSpec)
+            return
+        }
         val visible = (0 until childCount).map { getChildAt(it) }
             .filterIsInstance<ViewGroup>().filter { it.visibility != GONE }
         val width = MeasureSpec.getSize(widthMeasureSpec)
@@ -131,6 +149,10 @@ class LiquidNavigationBar @JvmOverloads constructor(context: Context, attrs: Att
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        if (vertical) {
+            layoutRail()
+            return
+        }
         var offset = paddingLeft.toFloat()
         for (i in items.indices) {
             val item = items[i]
@@ -158,7 +180,8 @@ class LiquidNavigationBar @JvmOverloads constructor(context: Context, attrs: Att
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (current.isEmpty) return
-        canvas.drawRoundRect(current, dp(28), dp(28), paint)
+        canvas.drawRoundRect(current, dp(if (vertical) 20 else 28), dp(if (vertical) 20 else 28), paint)
+        if (vertical) return
         if (!expanded) for (i in items.indices) {
             if (reveal[i] <= 0f) continue
             val text = label(items[i])
@@ -172,6 +195,61 @@ class LiquidNavigationBar @JvmOverloads constructor(context: Context, attrs: Att
                 baseline, textPaint)
             textPaint.color = oldColor
             textPaint.alpha = oldAlpha
+        }
+    }
+
+    private fun measureRail(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val visible = (0 until childCount).map { getChildAt(it) }
+            .filterIsInstance<ViewGroup>().filter { it.visibility != GONE }
+        if (visible != items) {
+            animator?.cancel()
+            animator = null
+            progress = 1f
+            items = visible
+        }
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val itemHeight = railItemHeight.takeIf { it > 0 } ?: dp(64).roundToInt()
+        val inner = (width - paddingLeft - paddingRight).coerceAtLeast(1)
+        val content = items.size * itemHeight + (items.size - 1).coerceAtLeast(0) * railItemGap
+        val height = resolveSize(content + paddingTop + paddingBottom, heightMeasureSpec)
+        setMeasuredDimension(width, height)
+        val selection = items.indexOf(selectedItem).coerceAtLeast(0)
+        items.forEachIndexed { i, item ->
+            item.measure(MeasureSpec.makeMeasureSpec(inner, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(itemHeight, MeasureSpec.EXACTLY))
+            label(item).measure(MeasureSpec.makeMeasureSpec(inner, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
+            if (i == selection) {
+                val top = paddingTop + i * (itemHeight + railItemGap).toFloat()
+                target.set(paddingLeft.toFloat(), top, (paddingLeft + inner).toFloat(), top + itemHeight)
+            }
+        }
+        if (progress >= 1f || start.isEmpty) current.set(target) else current.set(
+            start.left + (target.left - start.left) * progress,
+            start.top + (target.top - start.top) * progress,
+            start.right + (target.right - start.right) * progress,
+            start.bottom + (target.bottom - start.bottom) * progress,
+        )
+    }
+
+    private fun layoutRail() {
+        val itemHeight = railItemHeight.takeIf { it > 0 } ?: dp(64).roundToInt()
+        var top = paddingTop
+        for (item in items) {
+            item.layout(paddingLeft, top, width - paddingRight, top + itemHeight)
+            val icon = item.getChildAt(0)
+            val text = label(item)
+            val iconSize = dp(24).roundToInt()
+            val gap = dp(4).roundToInt()
+            val block = iconSize + gap + text.measuredHeight
+            val iconTop = (itemHeight - block) / 2
+            val iconLeft = (item.width - iconSize) / 2
+            icon.layout(iconLeft, iconTop, iconLeft + iconSize, iconTop + iconSize)
+            val textLeft = (item.width - text.measuredWidth) / 2
+            val textTop = iconTop + iconSize + gap
+            text.layout(textLeft, textTop, textLeft + text.measuredWidth, textTop + text.measuredHeight)
+            text.alpha = 1f
+            top += itemHeight + railItemGap
         }
     }
 

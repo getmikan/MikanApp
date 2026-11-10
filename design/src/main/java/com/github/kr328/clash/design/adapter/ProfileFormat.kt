@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design.adapter
 
+import com.github.kr328.clash.design.util.isTelevision
 import android.content.Context
 import android.content.res.ColorStateList
 import android.view.View
@@ -178,7 +179,20 @@ internal fun applyDelayStyle(
     val color = ContextCompat.getColor(context, colorRes)
     val fillAlpha = if (delayMs == StandalonePing.TCP_UNSUPPORTED) 0x14 else 0x26
     val pill = capsule.findViewById<View>(R.id.latency_pill) ?: capsule
-    pill.backgroundTintList = ColorStateList.valueOf((color and 0x00FFFFFF) or (fillAlpha shl 24))
+    val soft = (color and 0x00FFFFFF) or (fillAlpha shl 24)
+    if (context.isTelevision()) {
+        // TV: the focus tint is drawn over the focused row and the see-through pill under it went
+        // muddy. A hairline of the pill's own colour keeps its shape crisp on any row tint.
+        val density = context.resources.displayMetrics.density
+        pill.backgroundTintList = null
+        pill.background = android.graphics.drawable.GradientDrawable().apply {
+            cornerRadius = 999f * density
+            setColor(soft)
+            setStroke((1 * density).toInt().coerceAtLeast(1), (color and 0x00FFFFFF) or (0x80 shl 24))
+        }
+    } else {
+        pill.backgroundTintList = ColorStateList.valueOf(soft)
+    }
     dot.backgroundTintList = ColorStateList.valueOf(color)
     text.setTextColor(color)
 }

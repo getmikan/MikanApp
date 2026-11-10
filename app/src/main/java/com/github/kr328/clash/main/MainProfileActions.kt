@@ -1,5 +1,6 @@
 package com.github.kr328.clash.main
 
+import com.github.kr328.clash.design.util.advancedToolsShown
 import android.graphics.Typeface
 import android.view.View
 import android.widget.ScrollView
@@ -61,6 +62,15 @@ internal class MainProfileActions(
         m.findItem(R.id.profile_menu_subscription_sources).isVisible = profile.imported
         m.findItem(R.id.profile_menu_rules).isVisible = profile.imported
         m.findItem(R.id.profile_menu_duplicate).isVisible = profile.imported
+        // TV: the editors (rules, sources, raw config, config script) only with the advanced tools.
+        if (!activity.advancedToolsShown()) {
+            listOf(
+                R.id.profile_menu_subscription_sources,
+                R.id.profile_menu_rules,
+                R.id.profile_menu_view_config,
+                R.id.profile_menu_config_script,
+            ).forEach { m.findItem(it)?.isVisible = false }
+        }
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.profile_menu_set_active -> {

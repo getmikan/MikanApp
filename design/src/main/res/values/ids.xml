@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="close_button" type="id" />
+    <item name="tv_focus_halo" type="id" />
+    <item name="tv_focus_stop_scroller" type="id" />
+    <item name="tv_dropdown_center" type="id" />
+    <item name="tv_focus_inside" type="id" />
+    <item name="companion_tv_unpair" type="id" />
     <item name="subscription_update_icon_motion" type="id" />
     <item name="disclosure_icon_state" type="id" />
 </resources>

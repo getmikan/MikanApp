@@ -1553,4 +1553,13 @@
     <string name="subscription_notify_progress_summary">Уведомление, пока подписка обновляется в фоне</string>
     <string name="subscription_in_app_messages_title">Сообщать о фоновых обновлениях в приложении</string>
     <string name="subscription_in_app_messages_summary">Сообщения, когда обновление по расписанию завершилось при открытом приложении. Об обновлениях, которые вы запустили сами, приложение сообщает всегда.</string>
+    <string name="companion_tv_steps">На телефоне откройте Mikan и нажмите + → %1$s → %2$s, затем наведите камеру на этот код.</string>
+    <string name="companion_tv_qr_off">Включите удалённое управление, чтобы показать код сопряжения</string>
+    <string name="companion_tv_qr_starting">Запуск удалённого управления…</string>
+    <string name="app_routing_empty">Нет приложений под текущие фильтры. Очистите поиск или измените фильтры в меню ⋮.</string>
+    <string name="tv_advanced_tools_title">Расширенные инструменты на ТВ</string>
+    <string name="tv_advanced_tools_summary">Редакторы правил, цепочка прокси и инструменты конфига</string>
+    <string name="main_open_subscription_identity_summary_tv">HWID, схема clashfest:// и диагностика</string>
+    <string name="tv_advanced_tools_state_on">Включено</string>
+    <string name="tv_advanced_tools_state_off">Выключено</string>
 </resources>

@@ -85,6 +85,7 @@
                             android:textAppearance="@style/TextAppearance.App.BodyMedium" />
 
                         <com.github.kr328.clash.design.view.ActionLabel
+                            android:id="@+id/copy_hwid"
                             android:stateListAnimator="@animator/focus_scale"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -139,6 +140,7 @@
                             android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
                         <com.github.kr328.clash.design.view.ActionLabel
+                            android:id="@+id/copy_schemes"
                             android:stateListAnimator="@animator/focus_scale"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -193,6 +195,7 @@
                             android:textAppearance="@style/TextAppearance.App.BodySmall" />
 
                         <com.github.kr328.clash.design.view.ActionLabel
+                            android:id="@+id/copy_hwid_diagnostics"
                             android:stateListAnimator="@animator/focus_scale"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"

@@ -23,6 +23,7 @@ import com.github.kr328.clash.design.model.ProfilePageState
 import com.github.kr328.clash.design.motion.bindSubscriptionUpdateButton
 import com.github.kr328.clash.design.motion.bindSubscriptionUpdateIcon
 import com.github.kr328.clash.design.model.ServerPingMode
+import com.github.kr328.clash.design.util.isTelevision
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.common.branding.BrandManifest
 import com.github.kr328.clash.service.model.Profile
@@ -88,7 +89,7 @@ class ProfileAdapter(
     private val cachedOfflineSelectionsByProfile = mutableMapOf<UUID, Map<String, String>>()
     internal val selectedGroupIndex = mutableMapOf<UUID, Int>()
     private val lastReportedVisibleGroup = mutableMapOf<UUID, String>()
-    internal var proxySheetDialog: AppBottomSheetDialog? = null
+    internal var proxySheetDialog: androidx.appcompat.app.AppCompatDialog? = null
     internal var inlineProxyList: androidx.recyclerview.widget.RecyclerView? = null
     internal var inlineProxyProfile: Profile? = null
     internal var inlineProxyAdapter: ProxyNodeAdapter? = null
@@ -697,6 +698,7 @@ class ProfileAdapter(
         binding.menuView.visibility = if (compactHomeCard) View.GONE else View.VISIBLE
         binding.menuView.isClickable = !compactHomeCard
         binding.menuView.isFocusable = !compactHomeCard
+        if (!compactHomeCard && context.isTelevision()) wireTvProfileCardFocus(binding)
         val hasSupport = !announcementSupportUrl.isNullOrBlank() && current.imported && current.uuid == activeProfileUuid
         binding.supportSlot.visibility = if (!compactHomeCard && hasSupport) View.VISIBLE else View.GONE
         binding.supportView.setOnClickListener {
@@ -783,6 +785,7 @@ class ProfileAdapter(
         binding.subscriptionMenu.setOnClickListener {
             if (subscriptionClickGuard.accept(profile.uuid to it.id)) onMenuClicked(profile, it)
         }
+        if (context.isTelevision()) wireTvSubscriptionCardFocus(binding)
         binding.subscriptionName.text = profile.name
         binding.subscriptionStatus.visibility = if (profile.active) View.VISIBLE else View.GONE
         binding.subscriptionUsage.text = if (profile.imported && !profile.pending) {

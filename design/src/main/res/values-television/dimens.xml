@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TV: a 1080p panel is ~960x540dp. Landscape.kt caps content at max(height, this), which
+         left a 540dp phone column in the middle of the TV; content uses most of the width and
+         keeps a ~30dp overscan-safe margin on each side. -->
+    <dimen name="surface_landscape_min_width">900dp</dimen>
+
+    <!-- Node rows in the TV side panel stay compact so the panel shows more of them. -->
+    <dimen name="proxy_node_row_min_height">52dp</dimen>
+    <dimen name="proxy_node_row_padding_vertical">4dp</dimen>
+    <dimen name="proxy_group_segment_min_height">36dp</dimen>
+
+    <!-- Keeps the empty-state focus ring inside the 16dp content column, like the rule rows. -->
+    <dimen name="rules_hub_empty_margin_horizontal">16dp</dimen>
+    <!-- Section headers share that inset; their text keeps a small gap from the ring. -->
+    <dimen name="rules_hub_section_padding_horizontal">8dp</dimen>
+    <dimen name="rules_hub_section_padding_top">8dp</dimen>
+    <dimen name="rules_hub_section_padding_bottom">8dp</dimen>
+    <dimen name="rules_hub_section_margin_top">8dp</dimen>
+    <!-- Keeps the empty-state row's ring off the "Add rule" button right below it. -->
+    <dimen name="rules_hub_empty_margin_bottom">12dp</dimen>
+
+    <!-- The nav is a rail on the left on TV (MainTvLayout), so the tab pages keep only the
+         overscan-safe margin under the last row instead of room for a bar along the bottom. -->
+    <dimen name="main_bottom_nav_reserved_space">@dimen/tv_focus_edge_margin</dimen>
+</resources>

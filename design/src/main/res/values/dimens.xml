@@ -11,6 +11,11 @@
     <!-- Surface -->
     <dimen name="surface_landscape_min_width">500dp</dimen>
 
+    <!-- Proxy picker node row (adapter_home_proxy_node); TV overrides in values-television. -->
+    <dimen name="proxy_node_row_min_height">56dp</dimen>
+    <dimen name="proxy_node_row_padding_vertical">4dp</dimen>
+    <dimen name="proxy_group_segment_min_height">40dp</dimen>
+
     <!--  Toolbar  -->
     <dimen name="main_toolbar_padding_horizontal">10dp</dimen>
     <dimen name="toolbar_height">56dp</dimen>
@@ -88,6 +93,24 @@
     <dimen name="main_bottom_nav_bottom_margin">12dp</dimen>
     <dimen name="main_bottom_nav_corner_radius">32dp</dimen>
     <dimen name="main_bottom_nav_elevation">0dp</dimen>
+    <!-- TV only (MainTvLayout): the bottom nav as a left rail, and the empty Home's buttons. -->
+    <dimen name="tv_nav_rail_width">104dp</dimen>
+    <dimen name="tv_nav_rail_item_height">64dp</dimen>
+    <dimen name="tv_nav_rail_gap">12dp</dimen>
+    <dimen name="tv_empty_button_width">280dp</dimen>
+    <dimen name="tv_empty_button_height">64dp</dimen>
+    <!-- TV only: room kept between the D-pad-focused row and the screen's top and bottom edge, so
+         its ring (5dp outside the row) stays out of the outer 5% a TV may overscan. -->
+    <dimen name="tv_focus_edge_margin">36dp</dimen>
+    <!-- TV remote-control screen (CompanionTvDesign): the pairing QR, readable from the sofa. -->
+    <dimen name="companion_tv_qr_size">400dp</dimen>
+    <!-- Rules hub empty row and section headers: full-bleed on phones, inset to the column on TV. -->
+    <dimen name="rules_hub_empty_margin_horizontal">0dp</dimen>
+    <dimen name="rules_hub_section_padding_horizontal">16dp</dimen>
+    <dimen name="rules_hub_section_padding_top">16dp</dimen>
+    <dimen name="rules_hub_section_padding_bottom">8dp</dimen>
+    <dimen name="rules_hub_section_margin_top">0dp</dimen>
+    <dimen name="rules_hub_empty_margin_bottom">0dp</dimen>
     <dimen name="main_bottom_nav_reserved_space">96dp</dimen>
     <dimen name="main_bottom_nav_min_height">64dp</dimen>
     <dimen name="main_bottom_nav_item_min_height">56dp</dimen>

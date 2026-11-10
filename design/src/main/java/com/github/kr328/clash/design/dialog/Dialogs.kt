@@ -11,6 +11,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.ViewCompat
 import com.github.kr328.clash.common.compat.isAllowForceDarkCompat
 import com.github.kr328.clash.common.compat.enableEdgeToEdgeCompat
+import com.github.kr328.clash.design.util.TvFocusHighlight
+import com.github.kr328.clash.design.util.isTelevision
 import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.ui.Insets
 import com.github.kr328.clash.design.ui.Surface
@@ -79,6 +81,16 @@ class AppBottomSheetDialog(
         window!!.apply {
             enableEdgeToEdgeCompat()
             isAllowForceDarkCompat = false
+            TvFocusHighlight.install(this)
+            // TV: a sheet that opens on a text field (quick edit) popped the on-screen keyboard
+            // over itself, hiding the fields under it and Save. The field still opens the keyboard
+            // on CENTER, when the user means to type.
+            if (context.isTelevision()) {
+                setSoftInputMode(
+                    (attributes.softInputMode and WindowManager.LayoutParams.SOFT_INPUT_MASK_STATE.inv()) or
+                        WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN,
+                )
+            }
         }
 
         // On-device measurement showed the dialog's root `container` applies the bottom

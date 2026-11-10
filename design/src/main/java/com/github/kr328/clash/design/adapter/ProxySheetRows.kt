@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design.adapter
 
+import com.github.kr328.clash.design.util.tvFocusRingInside
 import android.content.Context
 import android.content.res.ColorStateList
 import android.view.View
@@ -123,16 +124,40 @@ internal fun scrollProxyPickerToSelected(
     sheet: BottomSheetProxyGroupsBinding,
     items: List<PickerItem>,
     groupIndex: Int,
+    focusSelected: Boolean = false,
 ) {
     val dropdown = items.any { it is PickerItem.Header }
     val index = items.indexOfFirst {
         it is PickerItem.Node && it.row.selected && (!dropdown || it.row.groupIndex == groupIndex)
     }
-    if (index < 0) return
+    if (index < 0) {
+        if (focusSelected) focusSelectedNode(sheet, items)
+        return
+    }
     sheet.proxySheetNodesList.post {
         (sheet.proxySheetNodesList.layoutManager as? LinearLayoutManager)
             ?.scrollToPositionWithOffset(index, 0)
+        if (focusSelected) focusSelectedNode(sheet, items)
     }
+}
+
+/** TV: the D-pad starts on the node in use (or the first node), not on the group track. */
+private fun focusSelectedNode(sheet: BottomSheetProxyGroupsBinding, items: List<PickerItem>) {
+    val list = sheet.proxySheetNodesList
+    val selected = items.indexOfFirst { it is PickerItem.Node && it.row.selected }
+    val target = selected.takeIf { it >= 0 } ?: items.indexOfFirst { it is PickerItem.Node }
+    if (target < 0) return
+    // The rows only exist once the panel window has laid the list out; retry briefly until then.
+    fun attempt(left: Int) {
+        val row = list.findViewHolderForAdapterPosition(target)?.itemView
+        val hit = row?.findViewById<View>(R.id.proxy_row_main_hit) ?: row
+        if (hit != null && hit.isAttachedToWindow && hit.width > 0) {
+            hit.requestFocus()
+        } else if (left > 0) {
+            list.postDelayed({ attempt(left - 1) }, 60L)
+        }
+    }
+    list.post { attempt(8) }
 }
 
 internal fun bindPickerGroupHeader(
@@ -283,6 +308,9 @@ internal fun ProfileAdapter.bindProxyNodeRow(
 
     val selected = pickerRow.selected
     row.isSelected = selected
+    // TV: rows sit close together, so the ring around the focused row would run into the selected
+    // row's outline next to it; it goes inside the row instead.
+    row.tvFocusRingInside()
     row.findViewById<View>(R.id.selected_bar).visibility =
         if (selected) View.VISIBLE else View.INVISIBLE
     row.findViewById<View>(R.id.selected_check).visibility =

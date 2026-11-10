@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TV variant of the nav item: the LiquidNavigationBar capsule draws the selection and
+  TvFocusHighlight draws the one focus ring of the window, so the item itself stays clear.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <corners android:radius="20dp" />
+</shape>

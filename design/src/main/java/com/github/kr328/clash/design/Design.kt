@@ -1,13 +1,18 @@
 package com.github.kr328.clash.design
 
 import android.content.Context
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import com.github.kr328.clash.design.ui.SnackbarHosts
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kr328.clash.design.ui.Surface
 import com.github.kr328.clash.design.ui.ToastDuration
 import com.github.kr328.clash.design.util.currentWindowInsetsSnapshot
 import com.github.kr328.clash.design.util.hostActivity
+import com.github.kr328.clash.design.util.isTelevision
 import com.github.kr328.clash.design.util.resolveThemedColor
 import com.github.kr328.clash.design.util.setOnInsertsChangedListener
 import com.google.android.material.snackbar.Snackbar
@@ -44,13 +49,42 @@ abstract class Design<R>(val context: Context) :
             }
             val host = SnackbarHosts.resolve(context, root)
             Snackbar.make(host, message, len).apply {
-                if (host === root) root.findViewById<View>(R.id.main_bottom_nav_card)?.let { anchorView = it }
+                // Above the bottom nav on phones; on TV the nav is a rail on the left, which would
+                // lift the snackbar to mid-screen.
+                if (!context.isTelevision()) {
+                    if (host === root) root.findViewById<View>(R.id.main_bottom_nav_card)?.let { anchorView = it }
+                } else {
+                    placeOnTv()
+                }
                 styleAsMaterial3()
                 val sheetElevation = host.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.elevation ?: 0f
                 view.elevation = maxOf(view.elevation, sheetElevation + context.resources.displayMetrics.density)
                 configure()
             }.show()
         }
+    }
+
+    /**
+     * TV: the snackbar stretched across the whole set, under the nav rail, and sat 8dp off the
+     * bottom edge, inside the overscan. It is a capped card centred over the content instead (right
+     * of the rail on the main screen), kept the overscan-safe margin above the bottom edge.
+     */
+    private fun Snackbar.placeOnTv() {
+        val res = context.resources
+        val lp = view.layoutParams as? ViewGroup.MarginLayoutParams ?: return
+        val railSpace = (root.findViewById<View>(R.id.main_pager)?.layoutParams as? ViewGroup.MarginLayoutParams)
+            ?.marginStart ?: 0
+        val side = (24 * res.displayMetrics.density).toInt()
+        lp.width = (640 * res.displayMetrics.density).toInt()
+        lp.marginStart = railSpace + side
+        lp.marginEnd = side
+        lp.bottomMargin = res.getDimensionPixelSize(R.dimen.tv_focus_edge_margin)
+        val gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+        when (lp) {
+            is CoordinatorLayout.LayoutParams -> lp.gravity = gravity
+            is FrameLayout.LayoutParams -> lp.gravity = gravity
+        }
+        view.layoutParams = lp
     }
 
     /**

@@ -8,7 +8,7 @@
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
-    android:minHeight="40dp"
+    android:minHeight="@dimen/proxy_group_segment_min_height"
     android:orientation="horizontal"
     android:paddingHorizontal="12dp">
 

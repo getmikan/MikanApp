@@ -1,8 +1,12 @@
 package com.github.kr328.clash.design.main
 
+import android.view.FocusFinder
+import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.github.kr328.clash.common.log.Log
@@ -14,7 +18,9 @@ import com.github.kr328.clash.design.databinding.DesignMainBinding
 import com.github.kr328.clash.design.model.AppLanguage
 import com.github.kr328.clash.design.motion.transformExpressivePage
 import com.github.kr328.clash.design.store.UiStore
+import com.github.kr328.clash.design.util.isTelevision
 import com.github.kr328.clash.design.util.resolveThemedColor
+import java.lang.ref.WeakReference
 import com.google.android.material.R as MaterialR
 
 /**
@@ -28,7 +34,23 @@ internal class MainPager(
     private val sendRequest: (Request) -> Unit,
     private val onTabRendered: () -> Unit,
     private val onNavigationHeightChanged: (Int) -> Unit,
+    /** TV without "Advanced tools on TV": the Routing tab (rule editors, proxy chain) is left out. */
+    private val tvHidesRouting: () -> Boolean = { false },
+    /** Runs after the tab set changed (the TV Settings entries follow the Routing tab). */
+    private val onTabsChanged: () -> Unit = {},
 ) {
+    private val tv = binding.root.context.isTelevision()
+
+    /** TV: the control each tab's content last had, so RIGHT from the nav rail returns to it. */
+    private val tvContentFocus = HashMap<MainTab, WeakReference<View>>()
+
+    /** TV: the pending tab switch for the rail item focus rests on (see [scheduleRailTabSwitch]). */
+    private var tvRailSwitch: Runnable? = null
+
+    /** The tabs in the bottom nav (the TV rail), in display order. */
+    val tabs: List<MainTab>
+        get() = activeTabs
+
     /**
      * The set of tabs currently visible in bottom nav + ViewPager, in display order.
      * Default mode is 4 tabs (no Operator). Operator appears between Routing and
@@ -46,8 +68,12 @@ internal class MainPager(
     fun setup() {
         if (pagerInitialised) return
         pagerInitialised = true
-        binding.mainBottomNavCard.addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
-            if (view.height > 0) onNavigationHeightChanged(view.height)
+        if (tv) {
+            applyTvNavigationRail()
+        } else {
+            binding.mainBottomNavCard.addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+                if (view.height > 0) onNavigationHeightChanged(view.height)
+            }
         }
 
         attachPagerAdapter()
@@ -127,7 +153,12 @@ internal class MainPager(
             (page.parent as? ViewGroup)?.removeView(page)
         }
         pages.forEach { it.visibility = View.VISIBLE }
-        binding.mainPager.adapter = StaticPageAdapter(pages)
+        val leftExit: (() -> View?)? = if (tv) {
+            { currentTab?.let { navForMainTab(it) } }
+        } else {
+            null
+        }
+        binding.mainPager.adapter = StaticPageAdapter(pages, leftExit)
         binding.mainPager.offscreenPageLimit = pages.lastIndex.coerceAtLeast(1)
     }
 
@@ -149,25 +180,19 @@ internal class MainPager(
      */
     fun reconcileTabs(brandHolder: BrandHolder) {
         val brand = brandHolder.manifest
-        val showTab = brand.showOperatorTab == true
-        val hideRouting = brand.hideRouting == true
-        val desired = when {
-            !brandHolder.isActive -> DEFAULT_TABS
-            showTab && hideRouting -> listOf(
-                MainTab.Home, MainTab.Profiles, MainTab.Operator, MainTab.Settings,
-            )
-            showTab -> listOf(
-                MainTab.Home, MainTab.Profiles, MainTab.Routing, MainTab.Operator, MainTab.Settings,
-            )
-            hideRouting -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Settings)
-            else -> DEFAULT_TABS
-        }
+        val desired = mainTabsFor(
+            brandActive = brandHolder.isActive,
+            showOperatorTab = brand.showOperatorTab == true,
+            hideRouting = brand.hideRouting == true,
+            tvHidesRouting = tvHidesRouting(),
+        )
         if (desired == activeTabs) return
         // Read the shown tab against the old set: the same pager position names another tab
         // once the set changes (Settings would become Routing when Operator arrives).
         val shown = if (pagerInitialised) mainTabForPagerPosition(binding.mainPager.currentItem) else null
         activeTabs = desired
         if (pagerInitialised) rebuildMainPagerForTabs(shown)
+        onTabsChanged()
     }
 
     /**
@@ -250,9 +275,17 @@ internal class MainPager(
             // The ViewPager keeps off-screen tab pages attached + VISIBLE (offscreenPageLimit =
             // all), so without this their content stays focusable and the D-pad escapes into the
             // hidden tab ("ghost" focus on TV). Only the current tab's page accepts focus.
-            (pageForMainTab(it) as? ViewGroup)?.descendantFocusability =
+            val page = pageForMainTab(it)
+            (page as? ViewGroup)?.descendantFocusability =
                 if (it == tab) ViewGroup.FOCUS_AFTER_DESCENDANTS
                 else ViewGroup.FOCUS_BLOCK_DESCENDANTS
+            // The page itself too: a scroll-view page is focusable, so RIGHT from the edge of the
+            // current tab landed on the neighbouring (off-screen) page and focus vanished.
+            if (tv && page is androidx.core.widget.NestedScrollView) page.isFocusable = it == tab
+        }
+        if (tv) {
+            updateRailFocusability(tab)
+            binding.root.post { keepFocusOnCurrentTab(tab) }
         }
         renderedTab = tab
         onTabRendered()
@@ -283,6 +316,10 @@ internal class MainPager(
      */
     private fun wireBottomNavFocus() {
         val visible = activeTabs.map { navForMainTab(it) }
+        if (tv) {
+            wireRailFocus(visible)
+            return
+        }
         visible.forEachIndexed { i, view ->
             view.nextFocusLeftId = visible[(i - 1).coerceAtLeast(0)].id
             view.nextFocusRightId = visible[(i + 1).coerceAtMost(visible.lastIndex)].id
@@ -290,13 +327,197 @@ internal class MainPager(
         }
     }
 
+    /**
+     * TV BACK on a tab other than Home goes to Home first (the rail is the only way between tabs
+     * there, so BACK leaving the app from Settings was a surprise); BACK on Home exits as before.
+     * Returns false when BACK should take its default path.
+     */
+    fun handleTvBack(): Boolean {
+        if (!tv) return false
+        val tab = currentTab ?: return false
+        if (tab == MainTab.Home || MainTab.Home !in activeTabs) return false
+        selectMainTab(MainTab.Home)
+        focusNavItem(MainTab.Home)
+        return true
+    }
+
+    /** Focus [tab]'s nav item, even while the TV rail is only offering the current tab's item. */
+    private fun focusNavItem(tab: MainTab): Boolean {
+        val nav = navForMainTab(tab)
+        nav.isFocusable = true
+        return nav.requestFocus()
+    }
+
+    /**
+     * TV: the bottom nav becomes a compact vertical rail on the left, vertically centred, and the
+     * tab pages move right of it. A 1080p TV is only ~540dp tall, so a bar along the bottom cost
+     * the pages a fifth of the screen. The items, their IDs and click wiring stay the same; only
+     * their arrangement and D-pad links change ([wireRailFocus]).
+     */
+    private fun applyTvNavigationRail() {
+        val res = binding.root.resources
+        val density = res.displayMetrics.density
+        val railWidth = res.getDimensionPixelSize(R.dimen.tv_nav_rail_width)
+        val sideMargin = res.getDimensionPixelSize(R.dimen.main_bottom_nav_horizontal_margin)
+        val card = binding.mainBottomNavCard
+        card.layoutParams = CoordinatorLayout.LayoutParams(railWidth, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            gravity = Gravity.START or Gravity.CENTER_VERTICAL
+            marginStart = sideMargin
+            // The bottomNavInset adapter keeps its bottom margin; the same on top keeps it centred.
+            topMargin = res.getDimensionPixelSize(R.dimen.main_bottom_nav_bottom_margin)
+            bottomMargin = topMargin
+        }
+        val rail = binding.mainBottomNavItems
+        rail.vertical = true
+        rail.railItemHeight = res.getDimensionPixelSize(R.dimen.tv_nav_rail_item_height)
+        rail.railItemGap = (4 * density).toInt()
+        rail.setPadding((4 * density).toInt(), (8 * density).toInt(), (4 * density).toInt(), (8 * density).toInt())
+        rail.layoutParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+        )
+
+        (binding.mainPager.layoutParams as? ViewGroup.MarginLayoutParams)?.let {
+            it.marginStart = sideMargin + railWidth + res.getDimensionPixelSize(R.dimen.tv_nav_rail_gap)
+            binding.mainPager.layoutParams = it
+        }
+
+        binding.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, newFocus ->
+            val tab = currentTab ?: return@addOnGlobalFocusChangeListener
+            if (newFocus != null && !isRailItem(newFocus) && isInside(newFocus, pageForMainTab(tab))) {
+                tvContentFocus[tab] = WeakReference(newFocus)
+            }
+            scheduleRailTabSwitch(newFocus)
+            updateRailFocusability(tab)
+        }
+    }
+
+    /**
+     * Google TV style: resting on a rail item opens its tab, so the content beside the rail always
+     * belongs to the highlighted item. The switch waits for focus to settle, so walking the rail
+     * quickly does not page through every tab on the way.
+     */
+    private fun scheduleRailTabSwitch(focused: View?) {
+        tvRailSwitch?.let(binding.root::removeCallbacks)
+        tvRailSwitch = null
+        val tab = focused?.let(::railTabOf) ?: return
+        if (tab == currentTab) return
+        val switch = Runnable {
+            tvRailSwitch = null
+            if (binding.root.findFocus() === focused && currentTab != tab) selectMainTab(tab)
+        }
+        tvRailSwitch = switch
+        binding.root.postDelayed(switch, RAIL_SETTLE_MS)
+    }
+
+    /** RIGHT before the settle delay ran: open the focused item's tab at once, then enter it. */
+    private fun openRailTabNow(item: View) {
+        tvRailSwitch?.let(binding.root::removeCallbacks)
+        tvRailSwitch = null
+        val tab = railTabOf(item) ?: return
+        if (tab != currentTab) selectTab(tab)
+    }
+
+    /**
+     * Rail D-pad: UP/DOWN walk the visible items (the ends stay put) and open the item's tab once
+     * focus rests on it, LEFT stays put, RIGHT goes into that tab's content, to the control it last
+     * had.
+     */
+    private fun wireRailFocus(visible: List<View>) {
+        visible.forEachIndexed { i, view ->
+            view.nextFocusUpId = visible[(i - 1).coerceAtLeast(0)].id
+            view.nextFocusDownId = visible[(i + 1).coerceAtMost(visible.lastIndex)].id
+            view.nextFocusLeftId = view.id
+            view.nextFocusRightId = view.id
+            view.setOnKeyListener { _, keyCode, event ->
+                if (keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return@setOnKeyListener false
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    openRailTabNow(view)
+                    focusCurrentTabContent()
+                }
+                true
+            }
+        }
+    }
+
+    /**
+     * While the D-pad is in the content, only the current tab's rail item takes focus, so LEFT
+     * from the content's left edge always lands on the tab the user is on. Inside the rail every
+     * visible item is focusable again so UP/DOWN can move between them.
+     */
+    private fun updateRailFocusability(current: MainTab) {
+        val focused = binding.root.findFocus()
+        val inRail = focused != null && isRailItem(focused)
+        activeTabs.forEach { tab ->
+            val nav = navForMainTab(tab)
+            if (nav !== focused) nav.isFocusable = inRail || tab == current
+        }
+    }
+
+    /** Where RIGHT from the rail goes: the control the tab last had, or Home's power orb. */
+    fun focusCurrentTabContent(): Boolean {
+        val tab = currentTab ?: return false
+        val page = pageForMainTab(tab)
+        tvContentFocus[tab]?.get()
+            ?.takeIf { it.isShown && it.isFocusable && isInside(it, page) }
+            ?.let { if (it.requestFocus()) return true }
+        if (tab == MainTab.Home) {
+            val target = if (binding.mainHomeActiveContent.visibility == View.VISIBLE) {
+                binding.mainPowerCard
+            } else {
+                binding.mainEmptyAddButton
+            }
+            if (target.requestFocus()) return true
+        }
+        val group = page as? ViewGroup ?: return false
+        return FocusFinder.getInstance().findNextFocus(group, null, View.FOCUS_DOWN)?.requestFocus() == true
+    }
+
+    /**
+     * A tab opened from page content (Home's "Active profile" row) left focus in the page that is
+     * now hidden and blocked, or on the pager itself: no ring, and the D-pad went nowhere. Unless
+     * focus is already on the rail or inside the new page, hand it to the new page's content.
+     */
+    private fun keepFocusOnCurrentTab(tab: MainTab) {
+        val root = binding.root
+        if (root.isInTouchMode || !root.hasWindowFocus()) return
+        val page = pageForMainTab(tab)
+        val focused = root.findFocus()
+        if (focused != null && focused !== page && focused !is RecyclerView) {
+            if (isRailItem(focused) || isInside(focused, page)) return
+        }
+        if (!focusCurrentTabContent()) navForMainTab(tab).requestFocus()
+    }
+
+    private fun isRailItem(view: View): Boolean = railTabOf(view) != null
+
+    private fun railTabOf(view: View): MainTab? =
+        MainTab.values().firstOrNull { navForMainTab(it) === view }
+
+    private fun isInside(view: View, ancestor: View): Boolean {
+        var v: View? = view
+        while (v != null) {
+            if (v === ancestor) return true
+            v = v.parent as? View
+        }
+        return false
+    }
+
     private companion object {
+        /** How long focus has to rest on a rail item before its tab opens (fast UP/DOWN skips). */
+        private const val RAIL_SETTLE_MS = 300L
         private val DEFAULT_TABS = listOf(MainTab.Home, MainTab.Profiles, MainTab.Routing, MainTab.Settings)
     }
 }
 
 private class StaticPageAdapter(
     private val pages: List<View>,
+    /**
+     * TV: where LEFT goes once nothing in the page is left of the focused control (the nav rail).
+     * The pager's RecyclerView otherwise answers it by trying to scroll to the neighbouring page,
+     * whose content is blocked, and keeps focus where it is.
+     */
+    private val leftExit: (() -> View?)? = null,
 ) : RecyclerView.Adapter<StaticPageAdapter.Holder>() {
     class Holder(val container: FrameLayout) : RecyclerView.ViewHolder(container)
 
@@ -306,7 +527,15 @@ private class StaticPageAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val container = FrameLayout(parent.context).apply {
+        val exit = leftExit
+        val container = object : FrameLayout(parent.context) {
+            override fun focusSearch(focused: View?, direction: Int): View? {
+                if (exit == null || direction != View.FOCUS_LEFT) return super.focusSearch(focused, direction)
+                return FocusFinder.getInstance().findNextFocus(this, focused, direction)
+                    ?: exit()
+                    ?: super.focusSearch(focused, direction)
+            }
+        }.apply {
             layoutParams = RecyclerView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -356,4 +585,25 @@ private class StaticPageAdapter(
     }
 
     override fun getItemCount(): Int = pages.size + 2
+}
+
+/**
+ * Bottom-nav (TV rail) tab set: `X-Brand-Hide-Routing` removes Routing on its own,
+ * `X-Brand-Show-Operator-Tab` adds Operator, and with both set Operator takes Routing's slot. On a
+ * TV without "Advanced tools on TV" Routing is left out as well. Only an active brand counts.
+ */
+internal fun mainTabsFor(
+    brandActive: Boolean,
+    showOperatorTab: Boolean,
+    hideRouting: Boolean,
+    tvHidesRouting: Boolean,
+): List<MainTab> {
+    val tabs = when {
+        !brandActive -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Routing, MainTab.Settings)
+        showOperatorTab && hideRouting -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Operator, MainTab.Settings)
+        showOperatorTab -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Routing, MainTab.Operator, MainTab.Settings)
+        hideRouting -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Settings)
+        else -> listOf(MainTab.Home, MainTab.Profiles, MainTab.Routing, MainTab.Settings)
+    }
+    return if (tvHidesRouting) tabs - MainTab.Routing else tabs
 }

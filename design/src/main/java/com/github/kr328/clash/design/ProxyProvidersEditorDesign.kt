@@ -1,5 +1,6 @@
 package com.github.kr328.clash.design
 
+import com.github.kr328.clash.design.util.capContentWidthOnTv
 import android.content.Context
 import android.view.View
 import android.widget.ArrayAdapter
@@ -44,6 +45,7 @@ class ProxyProvidersEditorDesign(
         get() = rootView
 
     init {
+        root.capContentWidthOnTv()
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v, insets ->
             val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             v.setPadding(safe.left, 0, safe.right, safe.bottom)

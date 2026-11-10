@@ -13,6 +13,10 @@ import com.github.kr328.clash.design.R
 import com.github.kr328.clash.design.dialog.SheetDragToDismiss
 import com.github.kr328.clash.design.databinding.BottomSheetProxyGroupsBinding
 import com.github.kr328.clash.design.dialog.AppBottomSheetDialog
+import com.github.kr328.clash.design.dialog.TvSidePanelDialog
+import com.github.kr328.clash.design.util.isTelevision
+import androidx.appcompat.app.AppCompatDialog
+import android.view.ViewGroup
 import com.github.kr328.clash.design.main.bindServerGroupNotice
 import com.github.kr328.clash.design.model.ServerPingMode
 import com.github.kr328.clash.design.store.UiStore
@@ -36,7 +40,11 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
     sheet.proxySheetPingMethod.setText(
         if (serverPingMode == ServerPingMode.ToServer) R.string.server_ping_direct else R.string.server_ping_through
     )
-    val dialog = AppBottomSheetDialog(context)
+    // TV: a full-height panel on the right instead of a bottom sheet (a sheet on a 540dp-tall TV
+    // showed a handful of rows and clipped the group tabs). Same content, D-pad driven.
+    val tv = context.isTelevision()
+    val dialog: AppCompatDialog = if (tv) TvSidePanelDialog(context) else AppBottomSheetDialog(context)
+    if (tv) prepareTvProxyPanel(sheet)
     proxySheetDialog = dialog
     var drag: SheetDragToDismiss? = null
     var dismissCleanup: () -> Unit = {}
@@ -290,8 +298,9 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
             }
             bindTestedAgo(sheet, profile, context)
             if (selectedScrolledGroupIndex != selectedIndex) {
+                val firstRender = selectedScrolledGroupIndex == null
                 selectedScrolledGroupIndex = selectedIndex
-                scrollProxyPickerToSelected(sheet, items, selectedIndex)
+                scrollProxyPickerToSelected(sheet, items, selectedIndex, focusSelected = tv && firstRender)
             }
         }
         renderFn = ::render
@@ -588,6 +597,7 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
 
     dialog.setContentView(sheet.root)
     dialog.show()
+    if (dialog !is AppBottomSheetDialog) return
     drag = SheetDragToDismiss.attach(dialog, sheet.proxySheetNodesList)
     // Open fully expanded, single-state (no collapsed peek). A previous peek override
     // (skipCollapsed=false + peekHeight=0.55h) caused two real bugs: (1) the sheet flashed
@@ -598,4 +608,38 @@ internal fun ProfileAdapter.openProxySheet(context: Context, profile: Profile) {
     // stops and only a deliberate drag-down from the top dismisses.
     dialog.behavior.skipCollapsed = true
     dialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+}
+
+/**
+ * TV side panel tweaks: room at the top where the phone sheet has its drag handle, and the group
+ * segments wrap onto up to three lines within the panel width so every group is in view (the track
+ * is no longer a sideways scroller, so it must not take D-pad focus itself).
+ */
+private fun prepareTvProxyPanel(sheet: BottomSheetProxyGroupsBinding) {
+    val root = sheet.root
+    val density = root.resources.displayMetrics.density
+    fun px(dp: Int) = (dp * density).toInt()
+    root.setPadding(root.paddingLeft, px(16), root.paddingRight, px(12))
+    val scroller = sheet.proxySheetGroupScroll
+    scroller.isFocusable = false
+    scroller.isHorizontalFadingEdgeEnabled = false
+    val segments = sheet.proxySheetGroupSegments
+    segments.minimumHeight = 0
+    scroller.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+        val width = v.width - v.paddingLeft - v.paddingRight
+        if (width > 0 && segments.flowWidth != width) {
+            v.post {
+                segments.flowWidth = width
+                // The hairline dividers sit between segments of one line; they would land at
+                // the line breaks once the row wraps.
+                segments.showDividers = android.widget.LinearLayout.SHOW_DIVIDER_NONE
+            }
+        }
+    }
+    // The node list keeps the focus ring (outside a row) clear of the list card's edges.
+    (sheet.proxySheetNodesList.parent as? View)?.let { surface ->
+        (surface.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin = px(8)
+    }
+    sheet.proxySheetNodesList.setPadding(px(8), px(8), px(8), px(12))
+    sheet.proxySheetNodesList.clipToPadding = false
 }

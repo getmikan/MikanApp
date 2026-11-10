@@ -39,6 +39,10 @@ import com.github.kr328.clash.design.util.applyLinearAdapter
 import com.github.kr328.clash.design.util.ClickGuard
 import com.github.kr328.clash.design.util.hostActivity
 import com.github.kr328.clash.design.util.isTelevision
+import com.github.kr328.clash.design.main.applyTvEmptyState
+import com.github.kr328.clash.design.main.applyTvHomeLayout
+import com.github.kr328.clash.design.main.applyTvPageFocusMargins
+import com.github.kr328.clash.design.main.focusPowerOrbIfIdle
 import com.github.kr328.clash.design.util.layoutInflater
 import com.github.kr328.clash.design.util.patchDataSet
 import com.github.kr328.clash.design.util.FlagParser
@@ -162,6 +166,8 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         onNavigationHeightChanged = { height ->
             bottomNavReservedSpace.set(height + context.resources.getDimensionPixelSize(R.dimen.main_bottom_nav_content_gap))
         },
+        tvHidesRouting = { tvHidesAdvancedTools() },
+        onTabsChanged = { if (context.isTelevision()) renderTvSettingsEntries() },
     )
     private val expandedProfileUuids: LinkedHashSet<UUID> = linkedSetOf()
     private val subscriptionPreviewUuids: LinkedHashSet<UUID> = linkedSetOf()
@@ -463,6 +469,10 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         withContext(Dispatchers.Main) {
             binding.hasProfiles = profiles.isNotEmpty()
             binding.profilesLoaded = true
+            if (profiles.isNotEmpty() && context.isTelevision()) {
+                binding.executePendingBindings()
+                binding.focusPowerOrbIfIdle()
+            }
             val homeProfiles = profiles.filter { it.active }.ifEmpty { profiles.take(1) }
             activeProfileForQuickActions = profiles.firstOrNull { it.active } ?: profiles.firstOrNull()
             renderActiveProfileCard(activeProfileForQuickActions)
@@ -857,6 +867,52 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
     /** Switch to the Profiles tab (the in-app profile manager) instead of opening a separate screen. */
     fun openProfilesTab() = mainPager.selectMainTab(MainTab.Profiles)
 
+    /**
+     * TV BACK on a tab other than Home goes to Home first; BACK on Home exits as before. Returns
+     * false when BACK should take its default path. Phones always get false.
+     */
+    fun handleTvBack(): Boolean = mainPager.handleTvBack()
+
+    /**
+     * A TV is for "connect, pick a node, watch": the rule editors, proxy chain and config tools (all
+     * typing and YAML) stay hidden until "Advanced tools on TV" is switched on. Phones never hide them.
+     */
+    fun tvHidesAdvancedTools(): Boolean = context.isTelevision() && !uiStore.tvAdvancedTools
+
+    /**
+     * TV Settings tab: the "Advanced tools on TV" switch, and an "App Routing" row for when the
+     * Routing tab is gone (without the advanced tools App Routing was all it still offered).
+     * Switching brings the Routing tab back on the rail at once.
+     */
+    private fun applyTvSettingsEntries() {
+        // Schemes & HWID has no copy buttons on a TV (no clipboard), so its summary doesn't promise them.
+        binding.mainSettingsIdentitySummary.setText(R.string.main_open_subscription_identity_summary_tv)
+        val toolsRow = binding.mainSettingsTvToolsCard
+        toolsRow.visibility = View.VISIBLE
+        toolsRow.setOnClickListener {
+            uiStore.tvAdvancedTools = !uiStore.tvAdvancedTools
+            reconcileTabsForBrand()
+            renderTvSettingsEntries()
+            // Rebuilding the pager detaches the page under the focus; keep it on the switch.
+            toolsRow.post { toolsRow.requestFocus() }
+        }
+        renderTvSettingsEntries()
+    }
+
+    private fun renderTvSettingsEntries() {
+        val on = uiStore.tvAdvancedTools
+        binding.mainSettingsTvToolsSwitch.isChecked = on
+        binding.mainSettingsTvToolsCard.stateDescriptionCompat(
+            context.getString(if (on) R.string.tv_advanced_tools_state_on else R.string.tv_advanced_tools_state_off),
+        )
+        binding.mainSettingsAppRoutingCard.visibility =
+            if (MainTab.Routing in mainPager.tabs) View.GONE else View.VISIBLE
+    }
+
+    private fun View.stateDescriptionCompat(text: CharSequence) {
+        androidx.core.view.ViewCompat.setStateDescription(this, text)
+    }
+
     /** The logical tab currently shown — captured by MainActivity before a soft recreate (D5). */
     val currentTab: MainTab?
         get() = mainPager.currentTab
@@ -893,6 +949,13 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         binding.hasProfiles = false
         binding.profilesLoaded = false
         applyHomeBackgroundStyle()
+        if (context.isTelevision()) {
+            // The nav is a rail on the left: the pages keep only the overscan-safe bottom margin.
+            bottomNavReservedSpace.set(context.resources.getDimensionPixelSize(R.dimen.main_bottom_nav_reserved_space))
+            // Settle the TV tab set (no Routing without the advanced tools) before the pager is
+            // built, so the rail doesn't show Routing for a moment and then drop it.
+            reconcileTabsForBrand()
+        }
         mainPager.setup()
 
         // Surface the remote-control quick entry on the TV home (deep settings nav with a D-pad
@@ -901,6 +964,10 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
         if (context.isTelevision()) {
             binding.mainCompanionRow.visibility = View.VISIBLE
             binding.mainCompanionEmptyButton.visibility = View.VISIBLE
+            binding.applyTvHomeLayout()
+            binding.applyTvEmptyState()
+            binding.applyTvPageFocusMargins()
+            applyTvSettingsEntries()
         }
 
         binding.profileList.also {
@@ -919,6 +986,10 @@ class MainDesign(context: Context) : Design<MainDesign.Request>(context) {
 
         binding.profilesTabList.also {
             it.applyLinearAdapter(context, tabProfileAdapter)
+            // TV: the list is ~900dp wide there, so subscription cards sit two per row.
+            if (context.isTelevision()) {
+                it.layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
+            }
             it.itemAnimator = DefaultItemAnimator().apply {
                 supportsChangeAnimations = false
                 changeDuration = 0
