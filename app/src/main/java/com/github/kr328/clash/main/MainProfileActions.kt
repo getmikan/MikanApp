@@ -23,9 +23,8 @@ import com.github.kr328.clash.service.model.Profile
 import com.github.kr328.clash.service.store.ServiceStore
 import com.github.kr328.clash.util.ImportRetry
 import com.github.kr328.clash.util.ProfileRuntimeTarget
-import com.github.kr328.clash.util.closeConnectionsAfterUserProxySwitchIfEnabled
+import com.github.kr328.clash.util.applyUserProxySelection
 import com.github.kr328.clash.util.showProfileQuickEditSheet
-import com.github.kr328.clash.util.withClash
 import com.github.kr328.clash.util.withProfile
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.*
@@ -192,18 +191,11 @@ internal class MainProfileActions(
                 return@launch
             }
             design.markProxySelectionPending(profile, group, name)
-            val patched = withClash {
-                patchSelector(group, name)
+            // Shared with the companion gateway: patch, remember, close old connections, announce.
+            val patched = activity.applyUserProxySelection(profile.uuid, group, name, remote = false) { message, duration ->
+                design.showToast(message, duration)
             }
-            if (patched) {
-                uiStore.proxyLastGroup = group
-                withProfile {
-                    rememberProxySelection(profile.uuid, group, name)
-                }
-                activity.closeConnectionsAfterUserProxySwitchIfEnabled { message, duration ->
-                    design.showToast(message, duration)
-                }
-            } else {
+            if (!patched) {
                 design.showToast(R.string.proxy_switch_selector_failed, ToastDuration.Long)
             }
             scheduleProxyDetails(profile, group)

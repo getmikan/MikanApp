@@ -13,6 +13,18 @@ internal object AboutVersions {
         "$version.$channel"
     }
 
+    /** Plain app version (e.g. `1.2.3`), as the companion status summary reports it. */
+    val appSemver: String by lazy {
+        semver.find(BuildConfig.VERSION_NAME)?.groupValues?.get(1) ?: BuildConfig.VERSION_NAME
+    }
+
+    /** The core version [core] shows, as a tag (`v1.0.0-beta.2` for Citrus); empty when unknown. */
+    val coreTag: String by lazy {
+        val citrus = CoreBuildConfig.CORE_NAME == "Citrus"
+        val raw = (if (citrus) CoreBuildConfig.CITRUS_TAG else CoreBuildConfig.CORE_TAG).replace("_", "-")
+        (if (citrus) citrusVersion else semver).find(raw)?.groupValues?.get(1)?.let { "v$it" }.orEmpty()
+    }
+
     // Citrus keeps its pre-release suffix (1.0.0-beta.2), mihomo shows x.y.z.
     private val citrusVersion = Regex("""v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?)""")
 

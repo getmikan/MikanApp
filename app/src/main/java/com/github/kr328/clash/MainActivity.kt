@@ -38,6 +38,7 @@ import com.github.kr328.clash.qr.ScanQrCode
 import com.github.kr328.clash.remote.Remote
 import com.github.kr328.clash.remote.StatusClient
 import com.github.kr328.clash.service.model.Profile
+import com.github.kr328.clash.util.ChangeBus
 import com.github.kr328.clash.util.shouldPollHomeTraffic
 import com.github.kr328.clash.util.showProfileQuickEditSheet
 import com.github.kr328.clash.util.withProfile
@@ -251,6 +252,36 @@ class MainActivity : BaseActivity<MainDesign>() {
                         design.showExceptionToast(e)
                     }
                 } while (refreshRequests.tryReceive().isSuccess)
+            }
+        }
+
+        // A paired controller (companion remote) changed the mode or the node through the same
+        // shared paths the Home controls use. Adopt it: drop our own converging pick and re-read
+        // the persisted state, so the dashboard follows the remote instead of reverting it.
+        // Profile switches and VPN on/off already arrive through the service broadcasts.
+        launch {
+            val remoteChanges = kotlinx.coroutines.channels.Channel<ChangeBus.Change>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+            val listener = ChangeBus.Listener { change, remote ->
+                if (remote) remoteChanges.trySend(change)
+            }
+            ChangeBus.addListener(listener)
+            try {
+                for (change in remoteChanges) {
+                    when (change) {
+                        ChangeBus.Change.Mode -> {
+                            tunnel.adoptExternalTunnelMode()
+                            scheduleDashboardRefresh(force = true)
+                        }
+                        ChangeBus.Change.Proxies -> {
+                            val active = runCatching { withProfile { queryActive() } }.getOrNull()
+                            if (active != null) scheduleProxyDetailsRefresh(active, uiStore.proxyLastGroup)
+                            scheduleDashboardRefresh(force = true)
+                        }
+                        else -> Unit
+                    }
+                }
+            } finally {
+                ChangeBus.removeListener(listener)
             }
         }
 

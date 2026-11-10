@@ -1,5 +1,8 @@
 package com.github.kr328.clash.main
 
+import com.github.kr328.clash.CompanionControlActivity
+import com.github.kr328.clash.CompanionRemoteActivity
+import com.github.kr328.clash.companion.controller.ControllerStore
 import android.content.ClipboardManager
 import android.net.Uri
 import android.view.View
@@ -76,7 +79,17 @@ internal class MainImportFlows(
             row.visibility = if (activity.isTelevision()) View.GONE else View.VISIBLE
             row.setOnClickListener {
                 dialog.dismiss()
-                activity.startActivity(CompanionActivity::class.intent)
+                // Straight to the remote: one paired TV opens it, several open the list, none
+                // opens the remote-control screen to pair the first one.
+                val agents = ControllerStore(activity).list()
+                activity.startActivity(
+                    when (agents.size) {
+                        0 -> CompanionActivity::class.intent
+                        1 -> CompanionRemoteActivity::class.intent
+                            .putExtra(CompanionRemoteActivity.EXTRA_DEVICE_ID, agents.single().deviceId)
+                        else -> CompanionControlActivity::class.intent
+                    },
+                )
             }
         }
         dialog.show()

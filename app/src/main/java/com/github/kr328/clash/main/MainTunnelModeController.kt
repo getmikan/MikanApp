@@ -1,28 +1,19 @@
 package com.github.kr328.clash.main
 
 import com.github.kr328.clash.MainActivity
-import com.github.kr328.clash.core.Clash
-import com.github.kr328.clash.core.model.Proxy
 import com.github.kr328.clash.core.model.TunnelState
 import com.github.kr328.clash.design.MainDesign
 import com.github.kr328.clash.design.util.showExceptionToast
-import com.github.kr328.clash.util.withClash
+import com.github.kr328.clash.util.TunnelModeApplier
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-internal fun normalizeTunnelMode(mode: TunnelState.Mode): TunnelState.Mode =
-    if (mode == TunnelState.Mode.Direct) TunnelState.Mode.Rule else mode
+internal fun normalizeTunnelMode(mode: TunnelState.Mode): TunnelState.Mode = TunnelModeApplier.normalize(mode)
 
-internal fun parseTunnelMode(name: String): TunnelState.Mode? =
-    when (name) {
-        TunnelState.Mode.Rule.name -> TunnelState.Mode.Rule
-        TunnelState.Mode.Global.name -> TunnelState.Mode.Global
-        TunnelState.Mode.Direct.name -> TunnelState.Mode.Rule
-        else -> null
-    }
+internal fun parseTunnelMode(name: String): TunnelState.Mode? = TunnelModeApplier.parse(name)
 
 /**
  * Rule / Global switching of the Home mode selector, plus the guard that keeps GLOBAL from
@@ -42,40 +33,20 @@ internal class MainTunnelModeController(private val activity: MainActivity) {
     private suspend fun MainDesign.applyTunnelMode(mode: TunnelState.Mode, scheduleRefresh: () -> Unit) {
         try {
             val normalized = normalizeTunnelMode(mode)
-            uiStore.tunnelModePreference = normalized.name
             pendingTunnelMode = normalized
             setMode(normalized)
 
             val running = clashRunning || withContext(Dispatchers.IO) { activity.resolveStatusSnapshot().ready }
-            if (running) {
-                val error = runCatching {
-                    withClash {
-                        val o = queryOverride(Clash.OverrideSlot.Session)
-                        o.mode = normalized
-                        patchOverride(Clash.OverrideSlot.Session, o)
-                    }
-                    if (normalized == TunnelState.Mode.Global) {
-                        ensureGlobalSelectionSafe()
-                    }
-                    delay(120L)
-                    val applied = runCatching {
-                        withClash { queryTunnelState().mode }
-                    }.getOrNull()
-                    if (applied != null && normalizeTunnelMode(applied) != normalized) {
-                        withClash {
-                            val o = queryOverride(Clash.OverrideSlot.Session)
-                            o.mode = normalized
-                            patchOverride(Clash.OverrideSlot.Session, o)
-                        }
-                    } else if (applied != null) {
-                        pendingTunnelMode = null
-                    }
-                }.exceptionOrNull()
-
-                if (error != null && error !is CancellationException) {
+            // The non-UI half (persist, patch the Session override, keep GLOBAL safe, verify and
+            // re-apply) is shared with the companion gateway.
+            val error = runCatching {
+                if (TunnelModeApplier.apply(activity, normalized, running, remote = false)) {
                     pendingTunnelMode = null
-                    showExceptionToast(error as? Exception ?: Exception(error))
                 }
+            }.exceptionOrNull()
+            if (error != null && error !is CancellationException) {
+                pendingTunnelMode = null
+                showExceptionToast(error as? Exception ?: Exception(error))
             }
         } catch (e: Exception) {
             pendingTunnelMode = null
@@ -89,46 +60,18 @@ internal class MainTunnelModeController(private val activity: MainActivity) {
         }
     }
 
-    private fun isBlockedGlobalChoice(name: String): Boolean =
-        name.equals("DIRECT", ignoreCase = true) || name.equals("REJECT", ignoreCase = true)
-
-    private fun isBlockedGlobalChoice(proxy: Proxy): Boolean =
-        proxy.type == Proxy.Type.Direct ||
-            proxy.type == Proxy.Type.Reject ||
-            isBlockedGlobalChoice(proxy.name)
-
-    suspend fun ensureGlobalSelectionSafe() {
-        runCatching {
-            val global = withClash {
-                queryProxyGroup("GLOBAL", com.github.kr328.clash.core.model.ProxySort.Default)
-            }
-            if (!isBlockedGlobalChoice(global.now)) return@runCatching
-            val firstUsable = global.proxies.firstOrNull { !isBlockedGlobalChoice(it) }?.name ?: return@runCatching
-            withClash { patchSelector("GLOBAL", firstUsable) }
-        }
-    }
+    suspend fun ensureGlobalSelectionSafe() = TunnelModeApplier.ensureGlobalSelectionSafe()
 
     suspend fun ensureGlobalSelectionSafeWithRetry(
         attempts: Int = 10,
         delayMs: Long = 180L,
-    ) {
-        repeat(attempts) { index ->
-            val done = runCatching {
-                val running = activity.resolveStatusSnapshot().ready
-                if (!running) return@runCatching true
+    ) = TunnelModeApplier.ensureGlobalSelectionSafeWithRetry(activity, attempts, delayMs)
 
-                val mode = withClash { queryTunnelState().mode }
-                if (normalizeTunnelMode(mode) != TunnelState.Mode.Global) return@runCatching true
-
-                val hasGlobal = withClash { queryProxyGroupNames(false).any { it.equals("GLOBAL", ignoreCase = true) } }
-                if (!hasGlobal) return@runCatching false
-
-                ensureGlobalSelectionSafe()
-                true
-            }.getOrDefault(false)
-
-            if (done) return
-            if (index < attempts - 1) delay(delayMs)
-        }
+    /**
+     * A paired controller changed the mode: drop our own converging pick so the dashboard shows
+     * the persisted mode instead of reverting it.
+     */
+    fun adoptExternalTunnelMode() {
+        pendingTunnelMode = null
     }
 }

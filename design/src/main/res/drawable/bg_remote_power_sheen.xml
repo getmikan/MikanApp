@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Top-weighted highlight so the remote's power button reads as a lit orb over any accent. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:centerX="0.5"
+        android:centerY="0.30"
+        android:endColor="#00FFFFFF"
+        android:gradientRadius="82dp"
+        android:startColor="#33FFFFFF"
+        android:type="radial" />
+</shape>
