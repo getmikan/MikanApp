@@ -7,14 +7,16 @@ import java.io.File
  * Keeps REALITY nodes connectable to current Xray servers.
  *
  * Xray-core 26.9.8+ rejects a REALITY ClientHello that does not carry an
- * X25519MLKEM768 key share before X25519. mihomo strips ML-KEM from the hello by
- * default (`reality-opts.support-x25519mlkem768` is false) and, in utls 1.8.8,
- * only the `chrome` fingerprint (Chrome 133) carries the share at all — firefox
- * resolves to 120, safari to 16, and so on. So for every inline proxy that uses
- * REALITY we turn the flag on and pin `client-fingerprint: chrome` unless it is
- * already an ML-KEM-capable fingerprint. A REALITY node with no fingerprint at
- * all cannot dial in mihomo ("REALITY is based on uTLS"), so filling it in is a
- * fix on its own.
+ * X25519MLKEM768 key share before X25519. Stock mihomo strips ML-KEM from the hello
+ * by default (`reality-opts.support-x25519mlkem768` is false) and, with
+ * metacubex/utls 1.8.8, only its `chrome` fingerprint (Chrome 133) carries the share
+ * at all: firefox resolves to 120, safari to 16, and so on. So for every inline proxy
+ * that uses REALITY we turn the flag on and pin `client-fingerprint: chrome` unless
+ * it is already an ML-KEM-capable fingerprint. Citrus, the core the app ships, sends
+ * the share by default and injects it into the REALITY fingerprints that lack it; its
+ * `chrome` is Chrome 155 (getmikan/utls) since v1.0.0-beta.3. A REALITY node with no fingerprint
+ * at all cannot dial in stock mihomo ("REALITY is based on uTLS"), so filling it in
+ * is a fix on its own.
  *
  * Inline `proxies:` only: nodes inside proxy-providers come from remote files
  * the engine fetches itself, and mihomo's provider `override:` has no knob for
@@ -24,7 +26,10 @@ import java.io.File
 object RealityCompat {
     private val realityTypes = setOf("vless", "vmess", "trojan")
 
-    /** `client-fingerprint` values whose ClientHello carries X25519MLKEM768 (metacubex/utls 1.8.8). */
+    /**
+     * `client-fingerprint` values left as they are: `chrome` carries X25519MLKEM768 in
+     * metacubex/utls 1.8.8 (Chrome 133) and in Citrus' getmikan/utls (Chrome 155).
+     */
     private val mlkemFingerprints = setOf("chrome")
 
     private const val PREFERRED_FINGERPRINT = "chrome"
